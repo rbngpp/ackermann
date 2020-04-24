@@ -1,5 +1,7 @@
 <launch>
 
+  <arg name="cmd_timeout" default="0.5"/>
+
   <arg name="model" default="$(find ackermann)/urdf/em.urdf"/>
   <arg name="rvizconfig" default="$(find ackermann)/rviz/urdf.rviz" />
 
@@ -8,9 +10,18 @@
     <arg name="model" value="$(arg model)" />
   </include>
 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <!--<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />-->
   <!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />-->
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
+      <node name="controller_spawner" pkg="controller_manager" type="spawner"
+          args="$(find ackermann)/config/em_3905_joint_ctrlr_params.yaml"/>
+
+    <!-- Control the steering, axle, and shock absorber joints. -->
+    <node name="ackermann_controller" pkg="ackermann_vehicle_gazebo"
+          type="ackermann_controller">
+      <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
+      <rosparam file="$(find ackermann)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
+ </node>
 </launch>
