@@ -1,41 +1,5 @@
 <?xml version="1.0"?>
 
-<!-- em_3905.urdf.xacro
-
-This file defines a model of a Traxxas(R) E-Maxx(R) #3905 RC (Radio Controlled)
-truck.
-
-Lengths are measured in meters, angles are measured in radians, and masses are
-measured in kilograms. All of these values are approximations.
-
-To work with Gazebo, each link must have an inertial element, even if
-the link only serves to connect two joints. To be visible in Gazebo, a link
-must have a collision element. Furthermore, the link must have a Gazebo
-material.
-
-Traxxas(R), E-Maxx(R), and Titan(R) are registered trademarks of Traxxas
-Management, LLC. em_3905.urdf.xacro was independently created by Wunderkammer
-Laboratory, and neither em_3905.urdf.xacro nor Wunderkammer Laboratory is
-affiliated with, sponsored by, approved by, or endorsed by Traxxas Management,
-LLC. Mabuchi Motor(R) is a registered trademark of Mabuchi Motor Co., Ltd.
-Corporation Japan. All other trademarks and service marks are the property of
-their respective owners.
-
-Copyright (c) 2011-2014 Wunderkammer Laboratory
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
-
 <robot name="em_3905" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!-- Degree-to-radian conversions -->
   <xacro:property name="degrees_45" value="0.785398163"/>
@@ -47,19 +11,6 @@ limitations under the License.
   <xacro:property name="chassis_width" value="0.168"/>
   <xacro:property name="chassis_height" value="0.01"/>
   <xacro:property name="chassis_mass" value="2.788"/>
-
-  <!-- battery_dist is the distance between the inner edges of the
-       batteries. battery_comp_depth is the battery compartment depth.
-       battery_length is measured along the x axis, battery_width
-       along the y axis, and battery_height along the z axis. -->
-  <xacro:property name="battery_x_offset" value="0.055"/>
-  <xacro:property name="battery_dist" value="0.065"/>
-  <xacro:property name="battery_comp_depth" value="0.02"/>
-  <xacro:property name="battery_comp_angle" value="0.34906585"/>
-  <xacro:property name="battery_length" value="0.16"/>
-  <xacro:property name="battery_width" value="0.047"/>
-  <xacro:property name="battery_height" value="0.024"/>
-  <xacro:property name="battery_mass" value="0.5025"/>
 
   <!-- hub_dia and tire_dia are the diameters of the hub and tire,
        respectively. hex_hub_depth is the distance that the hex hub is
@@ -112,9 +63,7 @@ limitations under the License.
   <xacro:property name="servo_stall_torque" value="0.5649"/>
   <xacro:property name="servo_no_load_speed" value="4.553"/>
 
-  <material name="battery_mat">
-    <color rgba="0 0 1 1"/>
-  </material>
+
   <material name="chassis_mat">
     <color rgba="0.5 0.5 0.5 1"/>
   </material>
@@ -164,54 +113,6 @@ limitations under the License.
     </inertial>
   </xacro:macro>
 
-  <!-- Battery -->
-  <xacro:macro name="battery" params="prefix reflect">
-    <joint name="chassis_to_${prefix}_battery" type="fixed">
-      <parent link="chassis"/>
-      <child link="${prefix}_battery_offset"/>
-      <origin xyz="${battery_x_offset - battery_length / 2}
-                   ${reflect * battery_dist / 2}
-                   0"
-              rpy="${reflect * battery_comp_angle} 0 0"/>
-    </joint>
-
-    <link name="${prefix}_battery_offset">
-      <xacro:null_inertial/>
-    </link>
-
-    <joint name="offset_to_${prefix}_battery" type="fixed">
-      <parent link="${prefix}_battery_offset"/>
-      <child link="${prefix}_battery"/>
-      <origin xyz="0
-                   ${reflect * battery_width / 2}
-                   ${(battery_height / 2) - battery_comp_depth}"/>
-    </joint>
-
-    <link name="${prefix}_battery">
-      <visual>
-        <geometry>
-          <box size="${battery_length} ${battery_width} ${battery_height}"/>
-        </geometry>
-        <material name="battery_mat"/>
-      </visual>
-
-      <collision>
-        <geometry>
-          <box size="${battery_length} ${battery_width} ${battery_height}"/>
-        </geometry>
-      </collision>
-
-      <xacro:solid_cuboid_inertial
-         width="${battery_length}" depth="${battery_width}"
-         height="${battery_height}" mass="${battery_mass}">
-        <origin/>
-      </xacro:solid_cuboid_inertial>
-    </link>
-
-    <gazebo reference="${prefix}_battery">
-      <material>Gazebo/Blue</material>
-    </gazebo>
-  </xacro:macro>
 
   <!-- Shock absorber -->
   <xacro:macro name="shock"
@@ -392,9 +293,6 @@ limitations under the License.
     <child link="chassis"/>
   </joint>
 
-  <!-- Batteries -->
-  <xacro:battery prefix="left" reflect="1"/>
-  <xacro:battery prefix="right" reflect="-1"/>
 
   <!-- Wheels -->
   <xacro:front_wheel lr_prefix="left" fr_prefix="front"
