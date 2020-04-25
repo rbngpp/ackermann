@@ -34,11 +34,16 @@
       <!--<cylinder radius="${base_radius}" length="${base_height}"/>-->
       </geometry>
     </collision>
+      <inertial>
+        <mass value="${base_mass}" />
+        <cylinder_inertia m="${base_mass}" r="${base_radius}" h="${base_height}"/>
+      </inertial>
   </link>
 <!--
   <caster_wheel fb="caster" lr="front" assex="0" parent="base_link" originx="0.115" originz="0.007"/>
   <caster_wheel fb="caster" lr="back" assex="0.02" parent="base_link" originx="-0.135" originz="0.009"/>
 -->
+
 
   <cylinder_wheel fb="front" lr="right" parent="base_link" translateX="-1" translateY="0.42" flipY="1"/>
   <cylinder_wheel fb="front" lr="left" parent="base_link" translateX="-1" translateY="-0.42" flipY="1"/>
