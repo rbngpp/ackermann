@@ -2,28 +2,37 @@
 
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro"> 
   <xacro:include filename="$(find my_robot_urdf)/urdf/cylinder_wheel.urdf.xacro"/>
-  <xacro:include filename="$(find my_robot_urdf)/urdf/caster_wheel.urdf.xacro"/>
-  <xacro:include filename="$(find my_robot_urdf)/urdf/visual_sensor.xacro"/>
 
+
+  <!--PROPERTY LIST-->       
+  <!--All units in m-kg-s-radians unit system -->
+  <xacro:property name="M_PI" value="3.1415926535897931"/>      
+  <xacro:property name="M_PI_2" value="1.570796327"/>       
+  <xacro:property name="DEG_TO_RAD" value="0.017453293"/>       
+  <!--Main Body cylinder base -->       
+  <xacro:property name="base_height" value="0.02"/>       
+  <xacro:property name="base_radius" value="0.15"/>       
+  <xacro:property name="base_mass" value="5"/> <!-- in kg -->
+  
   <link name="base_link">
     <visual>
       <geometry>
-        <cylinder length="${base_height}" radius="0.15"/>
+       <box size="0.5 0.25 0.115" />
+       <!-- <cylinder length="${base_height}" radius="0.15"/>-->
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <material name="blue"/>
     </visual>
     <collision>
-      <geometry>
-        <cylinder radius="${base_radius}" length="${base_height}"/>
+      <geometry> 
+      <box size="0.5 0.25 0.115" />
+      <!--<cylinder radius="${base_radius}" length="${base_height}"/>-->
       </geometry>
     </collision>
   </link>
 
-  <caster_wheel fb="caster" lr="front" assex="0" parent="base_link" originx="0.115" originz="0.007"/>
-  <caster_wheel fb="caster" lr="back" assex="0.02" parent="base_link" originx="-0.135" originz="0.009"/>
-  <cylinder_wheel fb="front" lr="right" parent="base_link" translateX="0" translateY="0.5" flipY="1"/>
-  <cylinder_wheel fb="front" lr="left" parent="base_link" translateX="0" translateY="-0.5" flipY="1"/>
+  <cylinder_wheel fb="front" lr="right" parent="base_link" translateX="0.25" translateY="0.115" flipY="1"/>
+  <cylinder_wheel fb="front" lr="left" parent="base_link" translateX="0.25" translateY="-0.115" flipY="1"/>
   
   <hokuyo base_radius="${base_radius}" base_height="${base_height}"/>
 
