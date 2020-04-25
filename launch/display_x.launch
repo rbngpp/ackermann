@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="model" default="$(find ackermann)/urdf/ackermann_prova.urdf"/>
+  <arg name="model" default="$(find ackermann)/urdf/my_robot_x.urdf"/>
   <!--<arg name="gui" default="true" />-->
   <arg name="rvizconfig" default="$(find ackermann)/rviz/urdf.rviz" />
 
@@ -18,11 +18,11 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
   <rosparam command="load"
-            file="$(find ackermann)/config/joints.yaml"
+            file="$(find my_robot_urdf)/config/joints.yaml"
             ns="r2d2_joint_state_controller" />
   
   <rosparam command="load"
-            file="$(find ackermann)/config/diffdrive.yaml"
+            file="$(find my_robot_urdf)/config/diffdrive.yaml"
             ns="r2d2_diff_drive_controller" /> 
 
   <node name="r2d2_controller_spawner" pkg="controller_manager" type="spawner"

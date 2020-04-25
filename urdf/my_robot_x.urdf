@@ -5,23 +5,27 @@
 <!-- =================================================================================== -->
 <robot name="my_robot">
   <!-- in kg-->
-  <!-- in kg -->
+  <!--<xacro:include filename="$(find my_robot_urdf)/urdf/caster_wheel.urdf.xacro"/>-->
   <link name="base_link">
     <visual>
       <geometry>
-        <!--<box size="0.5 0.25 0.115" />-->
-        <cylinder length="0.02" radius="0.15"/>
+        <box size="0.5 0.25 0.125"/>
+        <!--<cylinder length="${base_height}" radius="0.15"/>-->
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <material name="blue"/>
     </visual>
     <collision>
       <geometry>
-        <!--<box size="0.5 0.25 0.115" />-->
-        <cylinder length="0.02" radius="0.15"/>
+        <box size="0.5 0.25 0.125"/>
+        <!--<cylinder radius="${base_radius}" length="${base_height}"/>-->
       </geometry>
     </collision>
   </link>
+  <!--
+  <caster_wheel fb="caster" lr="front" assex="0" parent="base_link" originx="0.115" originz="0.007"/>
+  <caster_wheel fb="caster" lr="back" assex="0.02" parent="base_link" originx="-0.135" originz="0.009"/>
+-->
   <!--fb : front, back ; lr: left, right -->
   <link name="front_right_wheel">
     <visual>
@@ -55,7 +59,7 @@
   <joint name="front_right_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="front_right_wheel"/>
-    <origin rpy="0 0 0" xyz="0.0 0.045 0.0"/>
+    <origin rpy="0 0 0" xyz="-0.25 0.126 0.0"/>
     <axis rpy="0  0" xyz="0 1 0"/>
     <limit effort="100" velocity="100"/>
     <joint_properties damping="0.0" friction="0.0"/>
@@ -103,7 +107,7 @@
   <joint name="front_left_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="front_left_wheel"/>
-    <origin rpy="0 0 0" xyz="0.0 -0.045 0.0"/>
+    <origin rpy="0 0 0" xyz="-0.25 -0.126 0.0"/>
     <axis rpy="0  0" xyz="0 1 0"/>
     <limit effort="100" velocity="100"/>
     <joint_properties damping="0.0" friction="0.0"/>
@@ -118,7 +122,102 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
-  <hokuyo base_height="0.02" base_radius="0.15"/>
+  <!--fb : front, back ; lr: left, right -->
+  <link name="rear_right_wheel">
+    <visual>
+      <origin rpy="1.57079632679 0  0 " xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.04"/>
+      </geometry>
+      <material name="Red"/>
+    </visual>
+    <collision>
+      <origin rpy="1.57079632679 0 0 " xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.5"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00108333333333" ixy="0" ixz="0" iyy="0.00108333333333" iyz="0" izz="0.002"/>
+    </inertial>
+  </link>
+  <gazebo reference="rear_right_wheel">
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <kp value="10000000.0"/>
+    <kd value="1.0"/>
+    <fdir1 value="1 0 0"/>
+    <material>Gazebo/Grey</material>
+    <turnGravityOff>false</turnGravityOff>
+  </gazebo>
+  <joint name="rear_right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="rear_right_wheel"/>
+    <origin rpy="0 0 0" xyz="0.25 0.126 0.0"/>
+    <axis rpy="0  0" xyz="0 1 0"/>
+    <limit effort="100" velocity="100"/>
+    <joint_properties damping="0.0" friction="0.0"/>
+  </joint>
+  <!-- Transmission is important to link the joints and the controller -->
+  <transmission name="rear_right_wheel_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rear_right_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="rear_right_wheel_joint_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <!--fb : front, back ; lr: left, right -->
+  <link name="rear_left_wheel">
+    <visual>
+      <origin rpy="1.57079632679 0  0 " xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.04"/>
+      </geometry>
+      <material name="Red"/>
+    </visual>
+    <collision>
+      <origin rpy="1.57079632679 0 0 " xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.02" radius="0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.5"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00108333333333" ixy="0" ixz="0" iyy="0.00108333333333" iyz="0" izz="0.002"/>
+    </inertial>
+  </link>
+  <gazebo reference="rear_left_wheel">
+    <mu1 value="1.0"/>
+    <mu2 value="1.0"/>
+    <kp value="10000000.0"/>
+    <kd value="1.0"/>
+    <fdir1 value="1 0 0"/>
+    <material>Gazebo/Grey</material>
+    <turnGravityOff>false</turnGravityOff>
+  </gazebo>
+  <joint name="rear_left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="rear_left_wheel"/>
+    <origin rpy="0 0 0" xyz="0.25 -0.126 0.0"/>
+    <axis rpy="0  0" xyz="0 1 0"/>
+    <limit effort="100" velocity="100"/>
+    <joint_properties damping="0.0" friction="0.0"/>
+  </joint>
+  <!-- Transmission is important to link the joints and the controller -->
+  <transmission name="rear_left_wheel_joint_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="rear_left_wheel_joint">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="rear_left_wheel_joint_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
   <gazebo>
     <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
       <robotNamespace>/</robotNamespace>
