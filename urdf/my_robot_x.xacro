@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro"> 
-  <xacro:include filename="$(find my_robot_urdf)/urdf/cylinder_wheel.urdf.xacro"/>
+  <xacro:include filename="$(find ackermann)/urdf/cylinder_wheel.urdf.xacro"/>
+  <xacro:include filename="$(find ackermann)/urdf/sterzanti.xacro"/>
   <!--<xacro:include filename="$(find my_robot_urdf)/urdf/caster_wheel.urdf.xacro"/>--> 
 
 
@@ -11,7 +12,7 @@
   <xacro:property name="M_PI_2" value="1.570796327"/>       
   <xacro:property name="DEG_TO_RAD" value="0.017453293"/>       
   <!--Main Body cylinder base -->       
-  <xacro:property name="base_height" value="0.02"/>       
+  <xacro:property name="base_height" value="0.2"/>       
   <xacro:property name="base_radius" value="0.15"/>       
   <xacro:property name="base_mass" value="5"/> <!-- in kg -->
   <!-- Caster wheel -->
@@ -22,7 +23,7 @@
   <link name="base_link">
     <visual>
       <geometry>
-      <box size="0.5 0.25 0.125" />
+      <box size="0.25 0.110 0.03" />
       <!--<cylinder length="${base_height}" radius="0.15"/>-->
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -30,7 +31,7 @@
     </visual>
     <collision>
       <geometry>
-      <box size="0.5 0.25 0.125" />
+      <box size="0.25 0.110 0.03" />
       <!--<cylinder radius="${base_radius}" length="${base_height}"/>-->
       </geometry>
     </collision>
@@ -39,17 +40,14 @@
         <cylinder_inertia m="${base_mass}" r="${base_radius}" h="${base_height}"/>
       </inertial>
   </link>
-<!--
-  <caster_wheel fb="caster" lr="front" assex="0" parent="base_link" originx="0.115" originz="0.007"/>
-  <caster_wheel fb="caster" lr="back" assex="0.02" parent="base_link" originx="-0.135" originz="0.009"/>
--->
 
 
-  <cylinder_wheel fb="front" lr="right" parent="base_link" translateX="-1" translateY="0.42" flipY="1"/>
-  <cylinder_wheel fb="front" lr="left" parent="base_link" translateX="-1" translateY="-0.42" flipY="1"/>
+  <cylinder_wheel fb="rear" lr="right" parent="base_link" translateX="-0.5" translateY="0.212" flipY="1"/>
+  <cylinder_wheel fb="rear" lr="left" parent="base_link" translateX="-0.5" translateY="-0.212" flipY="1"/>
+  
+  <cylinder_steering_wheel fb="front" lr="right" parent="base_link" translateX="0.5" translateY="0.212" flipY="1"/>
+  <cylinder_steering_wheel fb="front" lr="left" parent="base_link" translateX="0.5" translateY="-0.212" flipY="1"/>
 
-  <cylinder_wheel fb="rear" lr="right" parent="base_link" translateX="1" translateY="0.42" flipY="1"/>
-  <cylinder_wheel fb="rear" lr="left" parent="base_link" translateX="1" translateY="-0.42" flipY="1"/>
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">

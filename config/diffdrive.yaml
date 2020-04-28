@@ -1,8 +1,10 @@
 type: "diff_drive_controller/DiffDriveController"
 publish_rate: 50
 
-left_wheel: 'front_left_wheel_joint'
-right_wheel: 'front_right_wheel_joint'
+left_wheel: 'rear_left_wheel_joint'
+right_wheel: 'rear_right_wheel_joint'
+
+
 
 
 wheel_separation: 0.44
@@ -29,3 +31,15 @@ angular:
     max_velocity           : 2.0   # rad/s
     has_acceleration_limits: true
     max_acceleration       : 6.0   # rad/s^2
+
+
+
+left_front_wheel:
+  steering_link_name: front_left_wheel_joint
+  steering_controller_name: left_steering_ctrlr
+  diameter: 0.14605
+
+right_front_wheel:
+  steering_link_name: front_right_wheel_joint
+  steering_controller_name: right_steering_ctrlr
+  diameter: 0.14605

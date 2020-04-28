@@ -1,3 +1,12 @@
 # The joint state controller handles publishing transforms for any moving joints
 type: "joint_state_controller/JointStateController"
 publish_rate: 50
+
+left_steering_ctrlr:
+  joint: left_steering_joint
+  type: effort_controllers/JointPositionController
+  pid: {p: 4.0, i: 0.0, d: 1.0}
+right_steering_ctrlr:
+  joint: right_steering_joint
+  type: effort_controllers/JointPositionController
+  pid: {p: 4.0, i: 0.0, d: 1.0}

@@ -1,0 +1,32 @@
+<launch>
+
+  <arg name="cmd_timeout" default="0.5"/>
+  <arg name="model" default="$(find ackermann)/urdf/em.urdf"/>
+  <!--<arg name="gui" default="true" />-->
+  <arg name="rvizconfig" default="$(find ackermann)/rviz/urdf.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <!--<param name="use_gui" value="$(arg gui)"/>-->
+
+  <include file="$(find ackermann)/launch/gazebo.launch">
+    <arg name="model" value="$(arg model)" />
+  </include>
+  
+  <!--
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> 
+  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+        <!-- Load the joint controllers. One of these publishes the joint states
+         to joint_states. -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner"
+          args="$(find ackermann)/config/em_3905_joint_ctrlr_params.yaml"/>
+
+    <!-- Control the steering, axle, and shock absorber joints. -->
+    <node name="ackermann_controller" pkg="ackermann"
+          type="ackermann_controller">
+      <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
+      <rosparam file="$(find ackermann)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
+    </node>
+</launch>

@@ -16,7 +16,7 @@
               izz="${m*r*r/2}" /> 
   </xacro:macro>
   
-  <xacro:macro name="cylinder_wheel" params="fb lr parent translateX translateY flipY"> <!--fb : front, back ; lr: left, right -->
+  <xacro:macro name="cylinder_steering_wheel" params="fb lr parent translateX translateY flipY"> <!--fb : front, back ; lr: left, right -->
     <link name="${fb}_${lr}_wheel">
       <visual>
         <origin xyz="0 0 0" rpy="${flipY*M_PI/2} 0  0 " /> 
@@ -48,7 +48,8 @@
       <turnGravityOff>false</turnGravityOff>
     </gazebo>
 
-    <joint name="${fb}_${lr}_wheel_joint" type="continuous">
+
+    <joint name="${fb}_${lr}_wheel_joint" type="revolute">
       <parent link="${parent}"/>
       <child link="${fb}_${lr}_wheel"/>
       <origin xyz="${translateX * base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy="0 0 0" /> 
@@ -57,7 +58,7 @@
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
 
-    <!-- Transmission is important to link the joints and the controller -->
+     <!-- Transmission is important to link the joints and the controller -->
     <transmission name="${fb}_${lr}_wheel_joint_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${fb}_${lr}_wheel_joint">
@@ -67,6 +68,7 @@
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
     </transmission>
+
 
   </xacro:macro>
 </robot>
