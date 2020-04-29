@@ -33,13 +33,3 @@ angular:
     max_acceleration       : 6.0   # rad/s^2
 
 
-
-left_front_wheel:
-  steering_link_name: front_left_wheel_joint
-  steering_controller_name: left_steering_ctrlr
-  diameter: 0.14605
-
-right_front_wheel:
-  steering_link_name: front_right_wheel_joint
-  steering_controller_name: right_steering_ctrlr
-  diameter: 0.14605
