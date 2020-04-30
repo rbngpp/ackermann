@@ -25,9 +25,14 @@
             file="$(find ackermann)/config/diffdrive.yaml"
             ns="r2d2_diff_drive_controller" /> 
 
+  <rosparam command="load"
+            file="$(find ackermann)/config/diffdrive.yaml"
+            ns="DD_controller" /> 
+
   <node name="r2d2_controller_spawner" pkg="controller_manager" type="spawner"
     args="joint_state_controller
           r2d2_diff_drive_controller
+          DD_controller
           --shutdown-timeout 3"/>
         
 
