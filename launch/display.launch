@@ -15,22 +15,20 @@
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> 
   -->
+
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
+  <!--
   <rosparam command="load"
             file="$(find ackermann)/config/joints.yaml"
-            ns="joint_state_controller" />
+            ns="joint_state_controller" /> -->
   
   <rosparam command="load"
-            file="$(find ackermann)/config/diffdrive.yaml"
-            ns="r2d2_diff_drive_controller" /> 
+            file="$(find ackermann)/config/diffdrive.yaml" /> 
 
-  <rosparam command="load"
-            file="$(find ackermann)/config/diffdrive.yaml"
-            ns="DD_controller" /> 
 
   <node name="r2d2_controller_spawner" pkg="controller_manager" type="spawner"
-    args="joint_state_controller
+    args="controller
           r2d2_diff_drive_controller
           DD_controller
           --shutdown-timeout 3"/>

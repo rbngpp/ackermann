@@ -64,9 +64,9 @@
     <hardwareInterface>EffortJointInterface</hardwareInterface>
     </joint>
     <actuator name="${fb}_${lr}_wheel_joint_motor">
-      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
+    </actuator> 
   </transmission>
 
 
