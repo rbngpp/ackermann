@@ -33,3 +33,26 @@ angular:
     max_acceleration       : 6.0   # rad/s^2
 
 
+DD_controller:
+  type: "diff_drive_controller/DiffDriveController"
+  publish_rate: 50
+  left_wheel: front_left_wheel_joint
+  right_wheel: front_right_wheel_joint
+  wheel_separation: 0.05
+  pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+  twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+  # Top level frame (link) of the robot description
+  base_frame_id: base_link
+  # Velocity and acceleration limits for the robot
+  linear:
+    x:
+      has_velocity_limits    : true
+      max_velocity           : 2.5   # m/s
+      has_acceleration_limits: true
+      max_acceleration       : 0.1  # m/s^2
+  angular:
+    z:
+      has_velocity_limits    : true
+      max_velocity           : 2.5  # rad/s
+      has_acceleration_limits: true
+      max_acceleration       : 0.3  # rad/s^2
