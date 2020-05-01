@@ -3,7 +3,7 @@
   
   <!-- Wheels -->
   <xacro:property name="wheel_radius" value="0.04" /> 
-  <xacro:property name="wheel_height" value="0.02" />
+  <xacro:property name="wheel_height" value="0.04" />
   <xacro:property name="wheel_mass" value="2.5" /> <!-- in kg-->
   
   <xacro:property name="base_x_origin_to_wheel_origin" value="0.25" />
