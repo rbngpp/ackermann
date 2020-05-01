@@ -2,7 +2,7 @@ controller:
   type: "joint_state_controller/JointStateController"
   publish_rate: 50
 
-r2d2_diff_drive_controller:
+posteriori:
   type: "diff_drive_controller/DiffDriveController"
   publish_rate: 50
 
@@ -38,8 +38,14 @@ r2d2_diff_drive_controller:
       max_acceleration       : 6.0   # rad/s^2
 
 
-DD_controller:
+sinistra:
   joint: front_left_wheel_joint
   type: effort_controllers/JointPositionController
   pid: {p: 4.0, i: 0.0, d: 1.0}
+
+destra:
+  joint: front_right_wheel_joint
+  type: effort_controllers/JointPositionController
+  pid: {p: 4.0, i: 0.0, d: 1.0}
+  
   
