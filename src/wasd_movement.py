@@ -23,37 +23,26 @@ def inserimento(comando,msg,deltasx,deltadx):
             msg.linear.x = 0
         msg.linear.x = msg.linear.x + 0.1
     elif comando == ('a'):
- #       steering = steering + 0.1
         if deltasx > 0.7:
-            deltasx = 0.7
-        else:
-            deltasx = deltasx +0.1
+            deltasx = 0.6
+        deltasx = deltasx +0.1
         R = b/np.tan(deltasx) + a/2
         deltadx = np.arctan(b/(R+a/2))
-        #deltadx = np.arctan(np.tan(deltasx)+b/a)
         if deltadx > 0.7: 
             deltadx = 0.7
-
-    #      deltasx = deltasx +0.2
-    #     deltadx = deltadx +0.1
     elif comando == ('s'):
         if msg.linear.x > 0: 
             msg.linear.x = 0
         msg.linear.x = msg.linear.x - 0.1
     elif comando == ('d'):
         if deltadx < -0.7:
-            deltadx = -0.7
-        else:
-            deltadx = deltadx -0.1
-        R = b/np.tan(deltasx) - a/2
+            deltadx = -0.6
+        deltadx = deltadx -0.1
+        R = b/np.tan(deltadx) - a/2
         deltasx = np.arctan(b/(R-a/2))
-        #deltasx = np.arctan(b/a-np.tan(deltadx))
         if deltasx < -0.7:
             deltasx = -0.7
 
-#        steering = steering -0.1
-#        deltadx = deltadx -0.2
-#        deltasx = deltasx -0.1
     else:
         exit()
     return msg,deltasx,deltadx
@@ -84,12 +73,5 @@ if __name__ == '__main__':
         pub = rospy.Publisher('/destra/command', Float64, queue_size=10)
         publish_callback(deltadx)
 
-
-        #timer = rospy.Timer(rospy.Duration(1. / 10), publish_callback(msg))  # 10Hz
-     
-        #rospy.spin()
-        #comando = raw_input('Input W-A-S-D per il controllo del robot:\n')
         comando = readchar.readchar()
         msg,deltasx,deltadx = inserimento(comando,msg,deltasx,deltadx)
-    #except rospy.ROSInterruptException:
-     #   pass
