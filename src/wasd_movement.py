@@ -22,7 +22,7 @@ def inserimento(comando,msg,deltasx,deltadx):
         if msg.linear.x < 0: 
             msg.linear.x = 0
         msg.linear.x = msg.linear.x + 0.1
-    elif comando == ('a'):
+    elif comando == ('a'): 
         if deltasx > 0.7:
             deltasx = 0.6
         deltasx = deltasx +0.1
@@ -45,33 +45,40 @@ def inserimento(comando,msg,deltasx,deltadx):
 
     else:
         exit()
-    return msg,deltasx,deltadx
+    return [msg,deltasx,deltadx]
 
 
 if __name__ == '__main__':
+    rospy.init_node('talker', anonymous=True)
+    pub1 = rospy.Publisher('/posteriori/cmd_vel', Twist, queue_size=10)
+    pub2 = rospy.Publisher('/sinistra/command', Float64, queue_size=10)
+    pub3 = rospy.Publisher('/destra/command', Float64, queue_size=10)
     print('Input W-A-S-D per il controllo del robot:\n')
     msg = Twist()
+    deltasx = Float64()
+    deltadx=Float64()
+
     msg.linear.x = 0.0
     msg.linear.y = 0.0
     msg.linear.z = 0.0
     msg.angular.x = 0.0
     msg.angular.y = 0.0
     msg.angular.z = 0.0
-
-    deltasx = Float64
     deltasx = 0.0
-    deltadx = Float64
     deltadx = 0.0
 
-    while True:
-        rospy.init_node('talker', anonymous=True)
+    r = rospy.Rate(10) # Setting a rate (hz) at which to publish
+    while not rospy.is_shutdown(): # Runnin until killed
+        rospy.loginfo("Sending commands")
+        comand = readchar.readchar()
+        var=inserimento(comand, msg, deltasx,deltadx)
 
-        pub = rospy.Publisher('/posteriori/cmd_vel', Twist, queue_size=10)
-        publish_callback(msg)
-        pub = rospy.Publisher('/sinistra/command', Float64, queue_size=10)
-        publish_callback(deltasx)
-        pub = rospy.Publisher('/destra/command', Float64, queue_size=10)
-        publish_callback(deltadx)
+        deltasx = var[1]
+        deltadx = var[2]
 
-        comando = readchar.readchar()
-        msg,deltasx,deltadx = inserimento(comando,msg,deltasx,deltadx)
+
+
+        pub1.publish(msg) # Sending the message via our publisher
+        pub2.publish(deltasx) 
+        pub3.publish(deltadx) 
+        r.sleep() # Calling sleep to ensure the rate we set above

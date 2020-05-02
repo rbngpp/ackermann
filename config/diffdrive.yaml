@@ -1,10 +1,10 @@
 controller:
   type: "joint_state_controller/JointStateController"
-  publish_rate: 10
+  publish_rate: 50
 
 posteriori:
   type: "diff_drive_controller/DiffDriveController"
-  publish_rate: 10
+  publish_rate: 50
 
   left_wheel: 'rear_left_wheel_joint'
   right_wheel: 'rear_right_wheel_joint'
@@ -40,12 +40,12 @@ posteriori:
 
 sinistra:
   joint: front_left_wheel_joint
-  type: effort_controllers/JointPositionController
-  pid: {p: 4.0, i: 0.0, d: 1.0}
+  type: position_controllers/JointPositionController
+  #pid: {p: 4.0, i: 0.0, d: 1.0}
 
 destra:
   joint: front_right_wheel_joint
-  type: effort_controllers/JointPositionController
-  pid: {p: 4.0, i: 0.0, d: 1.0}
+  type: position_controllers/JointPositionController
+  #pid: {p: 4.0, i: 0.0, d: 1.0}
   
   
