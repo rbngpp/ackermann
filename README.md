@@ -1,6 +1,10 @@
 # ackermann
 Car-like wehicle on Gazebo and path planner.
 
+![ROS](https://img.shields.io/badge/ROS-MELODIC-9cf)
+![CMAKE](https://img.shields.io/badge/CMAKE-inside-lightgrey)
+![PYTHON](https://img.shields.io/badge/PYTHON-inside-blueviolet)
+
 *A seguito di modifiche alla CMakeList si consiglia di effettuare nuovamente il catkin_make [29.04.2020]*
 
 
