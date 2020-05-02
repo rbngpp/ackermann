@@ -9,6 +9,7 @@ import readchar
 
 a = 0.11 #interasse delle ruote
 b = 0.25 #passo delle ruote
+R = 0 #raggio della curva
 
 
 
@@ -27,8 +28,9 @@ def inserimento(comando,msg,deltasx,deltadx):
             deltasx = 0.7
         else:
             deltasx = deltasx +0.1
-        
-        deltadx = np.arctan(np.tan(deltasx)+b/a)
+        R = b/np.tan(deltasx) + a/2
+        deltadx = np.arctan(b/(R+a/2))
+        #deltadx = np.arctan(np.tan(deltasx)+b/a)
         if deltadx > 0.7: 
             deltadx = 0.7
 
@@ -43,8 +45,9 @@ def inserimento(comando,msg,deltasx,deltadx):
             deltadx = -0.7
         else:
             deltadx = deltadx -0.1
-
-        deltasx = np.arctan(b/a-np.tan(deltadx))
+        R = b/np.tan(deltasx) - a/2
+        deltasx = np.arctan(b/(R-a/2))
+        #deltasx = np.arctan(b/a-np.tan(deltadx))
         if deltasx < -0.7:
             deltasx = -0.7
 
