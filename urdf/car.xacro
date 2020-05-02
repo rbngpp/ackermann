@@ -10,16 +10,24 @@
   <xacro:property name="M_PI" value="3.1415926535897931"/>      
   <xacro:property name="M_PI_2" value="1.570796327"/>       
   <xacro:property name="DEG_TO_RAD" value="0.017453293"/>       
-  <!--Main Body box base -->       
-  <xacro:property name="base_height" value="0.2"/>       
-  <xacro:property name="base_radius" value="0.15"/>       
-  <xacro:property name="base_mass" value="5"/> <!-- in kg -->
+  <!--Main Body box base  (z y x)-->       
+  <xacro:property name="height" value="0.01"/>       
+  <xacro:property name="width" value="0.110"/>
+  <xacro:property name="depth" value="0.25"/>
+  <xacro:property name="mass" value="5"/> <!-- in kg -->
 
-
+  <xacro:macro name="solid_cuboid_inertial" params="width depth height mass">
+      <inertia ixx="${mass * (depth * depth + height * height) / 12}"
+               ixy="0" ixz="0"
+               iyy="${mass * (width * width + height * height) / 12}"
+               iyz="0"
+               izz="${mass * (width * width + depth * depth) / 12}"/>
+  </xacro:macro>
+  
   <link name="base_link">
     <visual>
       <geometry>
-      <box size="0.25 0.110 0.01" />
+      <box size="${depth} ${width} ${height}"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <material name="blue"/>
@@ -27,12 +35,12 @@
     <collision>
       <geometry>
       <box size="0.25 0.110 0.01" />
-      <!--<cylinder radius="${base_radius}" length="${base_height}"/>-->
+      <!--<cylinder radius="${base_radius}" length="${height}"/>-->
       </geometry>
     </collision>
       <inertial>
-        <mass value="${base_mass}" />
-        <cylinder_inertia m="${base_mass}" r="${base_radius}" h="${base_height}"/>
+        <mass value="${mass}" />
+        <solid_cuboid_inertial width='${width}' depth='${depth}' height='${height}' mass='${mass}' />
       </inertial>
   </link>
 
