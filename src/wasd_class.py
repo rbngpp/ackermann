@@ -9,13 +9,13 @@ from sys import exit
 import readchar
 
 # DEFINITIONS
-a = 0.11 # Interasse delle ruote
-b = 0.25 # Passo delle ruote
-R = 0 # Raggio della curva
-topics = ['/posteriori/cmd_vel','/sinistra/command','/destra/command']
-msg = Twist()
-deltasx = Float64()
-deltadx=Float64()
+a = 0.11 # Wheelbase
+b = 0.25 # Step of the wheels
+R = 0 # Curve radius
+topics = ['/posteriori/cmd_vel','/sinistra/command','/destra/command'] # Topics for publishing
+msg = Twist() # Message for the rear traction
+deltasx = Float64() # Message for the front left steering wheel
+deltadx = Float64() # Message for the front right steering wheel
 
 
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     rospy.init_node('talker', anonymous=True)
     r = rospy.Rate(10) # Setting a rate (hz) at which to publish
-
+    # Initialization of the messages
     msg.linear.x = 0.0
     msg.linear.y = 0.0
     msg.linear.z = 0.0
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     msg.angular.z = 0.0
     deltasx = 0.0
     deltadx = 0.0
-    
+    # Setting of the channels
     pub1 = ControlWasd(topics[0], Twist)
     pub2 = ControlWasd(topics[1], Float64)
     pub3 = ControlWasd(topics[2], Float64)
@@ -79,17 +79,16 @@ if __name__ == '__main__':
     while not rospy.is_shutdown(): # Runnin until killed
         
         rospy.loginfo("Sending commands")
-
+        # Reading of the commands from the user
         command = readchar.readchar()
         move = ctrl_input(command, msg, deltasx,deltadx)
-
+        # Assign commands to topics
         msg = move[0]
         deltasx = move[1]
-        deltadx = move[2]
-    
-
+        deltadx = move[2]  
+        # Publish topics in their channels
         pub1.publish(msg)
         pub2.publish(deltasx)
         pub3.publish(deltadx)
-
+        # Wait until new command
         r.sleep()
