@@ -49,7 +49,7 @@
     </gazebo>
 
 
-    <joint name="${fb}_${lr}_wheel_joint" type="revolute">
+    <joint name="${fb}_${lr}_wheel_joint" type="continuous"> 
       <parent link="${parent}"/>
       <child link="${fb}_${lr}_wheel"/>
       <origin xyz="${translateX * base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy="0 0 0" /> 
