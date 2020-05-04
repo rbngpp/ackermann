@@ -53,12 +53,13 @@
       <parent link="${parent}"/>
       <child link="${fb}_${lr}_wheel"/>
       <origin xyz="${translateX * base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy="0 0 0" /> 
-      <axis xyz="0 0 1" rpy="0  0" />
-      <limit lower="-0.78" upper="0.78" effort="100" velocity="100"/>
+      <axis xyz="0 1 0" rpy="0 0 0" />
+      <!--<axis xyz="0 0 1" rpy="0  0" />-->
+      <!--<limit lower="-0.78" upper="0.78" effort="100" velocity="100"/>-->
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
-
-    <transmission name="${fb}_${lr}_wheel_joint_trans">
+<!--
+  <transmission name="${fb}_${lr}_wheel_joint_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="${fb}_${lr}_wheel_joint">
     <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
@@ -68,6 +69,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator> 
   </transmission>
+-->
 
 
   </xacro:macro>
