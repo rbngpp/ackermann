@@ -37,10 +37,27 @@
 ## to the 'chatter' topic
 
 import rospy
-from std_msgs.msg import String
+from nav_msgs.msg import Odometry
+from tf.transformations import euler_from_quaternion
 
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+def get_angle_pose(quaternion_pose):
+    q = [quaternion_pose.orientation.x,
+        quaternion_pose.orientation.y,
+        quaternion_pose.orientation.z,
+        quaternion_pose.orientation.w]
+    roll, pitch, yaw = euler_from_quaternion(q)
+
+    theta = yaw
+    return theta
+
+def callback(msg):
+    x = msg.pose.pose.position.x
+    y = msg.pose.pose.position.y
+    theta = get_angle_pose(msg.pose.pose)
+    #rospy.loginfo(rospy.get_caller_id() + 'Posizione lungo X: %s', x)
+    #rospy.loginfo(rospy.get_caller_id() + 'Posizione lungo Y: %s', y)
+    rospy.loginfo(rospy.get_caller_id() + 'Orientamento Theta: %s', theta)
+    
 
 def listener():
 
@@ -51,7 +68,7 @@ def listener():
     # run simultaneously.
     rospy.init_node('listener', anonymous=True)
 
-    rospy.Subscriber('chatter', String, callback)
+    rospy.Subscriber('/ground_truth/state', Odometry, callback)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
