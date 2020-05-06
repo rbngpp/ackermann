@@ -9,7 +9,8 @@ from sys import exit
 import readchar
 
 # DEFINITIONS
-a = 0.11 # Wheelbase
+incremento = 0.2
+a = 0.21 # Wheelbase
 b = 0.25 # Step of the wheels
 R = 0 # Curve radius
 topics = ['/posteriori/cmd_vel','/sinistra/command','/destra/command'] # Topics for publishing
@@ -32,11 +33,11 @@ def ctrl_input(command,msg,deltasx,deltadx):
     if command ==('w'):
         if msg.linear.x < 0: 
             msg.linear.x = 0
-        msg.linear.x = msg.linear.x + 0.1
+        msg.linear.x = msg.linear.x + incremento
     elif command == ('a'): 
         if deltasx > 0.7:
             deltasx = 0.6
-        deltasx = deltasx +0.1
+        deltasx = deltasx +incremento
         R = b/np.tan(deltasx) + a/2
         deltadx = np.arctan(b/(R+a/2))
         if deltadx > 0.7: 
@@ -44,11 +45,11 @@ def ctrl_input(command,msg,deltasx,deltadx):
     elif command == ('s'):
         if msg.linear.x > 0: 
             msg.linear.x = 0
-        msg.linear.x = msg.linear.x - 0.1
+        msg.linear.x = msg.linear.x - incremento
     elif command == ('d'):
         if deltadx < -0.7:
             deltadx = -0.6
-        deltadx = deltadx -0.1
+        deltadx = deltadx -incremento
         R = b/np.tan(deltadx) - a/2
         deltasx = np.arctan(b/(R-a/2))
         if deltasx < -0.7:

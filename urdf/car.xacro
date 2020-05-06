@@ -24,6 +24,15 @@
                izz="${mass * (width * width + depth * depth) / 12}"/>
   </xacro:macro>
   
+  <!--Rimozione warning
+  <link name="chasis">
+  </link>
+  <joint name="chasis_joint" type="fixed">
+  <parent link="chasis"/>
+  <child link="base_link"/>
+  </joint>
+-->
+
   <link name="base_link">
     <visual>
       <geometry>
@@ -35,7 +44,6 @@
     <collision>
       <geometry>
       <box size="0.25 0.110 0.01" />
-      <!--<cylinder radius="${base_radius}" length="${height}"/>-->
       </geometry>
     </collision>
       <inertial>

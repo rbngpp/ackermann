@@ -15,8 +15,20 @@
               iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
               izz="${m*r*r/2}" /> 
   </xacro:macro>
-  
+
+   <xacro:macro name="null_inertial">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </xacro:macro>
+
   <xacro:macro name="cylinder_steering_wheel" params="fb lr parent translateX translateY flipY"> <!--fb : front, back ; lr: left, right -->
+    
+    <link name="${fb}_${lr}_axle_carrier">
+      <xacro:null_inertial/>
+    </link>
+    
     <link name="${fb}_${lr}_wheel">
       <visual>
         <origin xyz="0 0 0" rpy="${flipY*M_PI/2} 0  0 " /> 
@@ -50,18 +62,27 @@
 
 
     <joint name="${fb}_${lr}_wheel_joint" type="continuous"> 
-      <parent link="${parent}"/>
+      <parent link="${fb}_${lr}_axle_carrier"/>
       <child link="${fb}_${lr}_wheel"/>
-      <origin xyz="${translateX * base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy="0 0 0" /> 
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <axis xyz="0 1 0" rpy="0 0 0" />
       <!--<axis xyz="0 0 1" rpy="0  0" />-->
       <!--<limit lower="-0.78" upper="0.78" effort="100" velocity="100"/>-->
       <joint_properties damping="0.0" friction="0.0"/>
     </joint>
-<!--
+
+   <joint name="${fb}_${lr}_steering_wheel_joint" type="revolute"> 
+      <parent link="${parent}"/>
+      <child link="${fb}_${lr}_axle_carrier"/>
+      <origin xyz="${translateX * base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy="0 0 0" /> 
+      <axis xyz="0 0 1" rpy="0 0 0" />
+      <limit lower="-0.78" upper="0.78" effort="100" velocity="100"/>
+      <joint_properties damping="0.0" friction="0.0"/>
+    </joint>
+
   <transmission name="${fb}_${lr}_wheel_joint_trans">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="${fb}_${lr}_wheel_joint">
+    <joint name="${fb}_${lr}_steering_wheel_joint">
     <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="${fb}_${lr}_wheel_joint_motor">
@@ -69,7 +90,18 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator> 
   </transmission>
--->
+
+
+  <transmission name="${fb}_${lr}_wheel_joint_trans1">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${fb}_${lr}_wheel_joint">
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${fb}_${lr}_wheel_joint_motor1">
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+
 
 
   </xacro:macro>

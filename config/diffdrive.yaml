@@ -6,11 +6,8 @@ posteriori:
   type: "diff_drive_controller/DiffDriveController"
   publish_rate: 50
 
-  left_wheel: 'rear_left_wheel_joint'
-  right_wheel: 'rear_right_wheel_joint'
-
-
-
+  left_wheel: ['rear_left_wheel_joint', 'front_left_wheel_joint']
+  right_wheel: ['rear_right_wheel_joint', 'front_right_wheel_joint']
 
   wheel_separation: 0.44
 
@@ -27,9 +24,9 @@ posteriori:
   linear:
     x:
       has_velocity_limits    : true
-      max_velocity           : 0.2   # m/s
+      max_velocity           : 1.0   # m/s
       has_acceleration_limits: true
-      max_acceleration       : 0.6   # m/s^2
+      max_acceleration       : 2.0   # m/s^2
   angular:
     z:
       has_velocity_limits    : true
@@ -39,13 +36,19 @@ posteriori:
 
 
 sinistra:
+  joint: front_left_steering_wheel_joint
+  type: position_controllers/JointPositionController
+
+destra:
+  joint: front_right_steering_wheel_joint
+  type: position_controllers/JointPositionController
+  
+left_axle:
   joint: front_left_wheel_joint
   type: position_controllers/JointPositionController
   #pid: {p: 4.0, i: 0.0, d: 1.0}
 
-destra:
+right_axle:
   joint: front_right_wheel_joint
   type: position_controllers/JointPositionController
   #pid: {p: 4.0, i: 0.0, d: 1.0}
-  
-  
