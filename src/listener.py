@@ -39,39 +39,64 @@
 import rospy
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
+import numpy as np
+from geometry_msgs.msg import Twist
 
 def get_angle_pose(quaternion_pose):
-    q = [quaternion_pose.orientation.x,
+    q1 = [quaternion_pose.orientation.x,
         quaternion_pose.orientation.y,
         quaternion_pose.orientation.z,
         quaternion_pose.orientation.w]
-    roll, pitch, yaw = euler_from_quaternion(q)
+    roll, pitch, yaw = euler_from_quaternion(q1)
 
     theta = yaw
     return theta
 
 def callback(msg):
+    global q
+    qf = [2,0,0]
     x = msg.pose.pose.position.x
     y = msg.pose.pose.position.y
     theta = get_angle_pose(msg.pose.pose)
-    #rospy.loginfo(rospy.get_caller_id() + 'Posizione lungo X: %s', x)
-    #rospy.loginfo(rospy.get_caller_id() + 'Posizione lungo Y: %s', y)
-    rospy.loginfo(rospy.get_caller_id() + 'Orientamento Theta: %s', theta)
+    q = np.array([x,y,theta]) 
     
+    rospy.loginfo(rospy.get_caller_id() + 'Posizione lungo X: %s', x)
+    #rospy.loginfo(rospy.get_caller_id() + 'Posizione lungo Y: %s', y)
+    #rospy.loginfo(rospy.get_caller_id() + 'Orientamento Theta: %s', theta)
+    err = get_error(0,qf,q)
+    #rospy.loginfo(rospy.get_caller_id() + 'Errore: %s', err)
+
+
+    return q
 
 def listener():
 
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
     rospy.init_node('listener', anonymous=True)
-
     rospy.Subscriber('/ground_truth/state', Odometry, callback)
-
-    # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
+    return q
+
+def get_error(T,qf,q):
+    #slide 80 LDC
+    #get robot position updated from callback
+    x = q[0]
+    y = q[1]
+    theta = q[2]
+    x_d = qf[0]
+    y_d = qf[1]
+    theta_d = qf[2]
+    #rospy.loginfo("x={} y={} th={}".format(x,y,theta))
+    #compute error
+    e1 = (x_d - x) * np.cos(theta) + (y_d - y) * np.sin(theta)
+    e2 = -(x_d - x) * np.sin(theta) + (y_d - y) * np.cos(theta)
+    e3 = theta_d - theta
+    err = np.array([e1, e2, e3])
+    return err
 
 if __name__ == '__main__':
+    pub = rospy.Publisher('/posteriori/cmd_vel', Twist, queue_size=10)
     listener()
+    rospy.spin()
+    #qf = [2, 0, 0]
+    #err = get_error(0,qf,q)
+    #rospy.loginfo(rospy.get_caller_id() + 'Errore: %s', err)

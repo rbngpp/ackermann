@@ -26,12 +26,4 @@
           destra
           --shutdown-timeout 3"/>
   
-  <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
-    <param name="default_topic" value="/posteriori/cmd_vel"/>
-  </node>
-
-  <node name="rqt_robot_steering1" pkg="rqt_robot_steering" type="rqt_robot_steering">
-    <param name="default_topic" value="/sinistra/command"/>
-  </node>
-
 </launch>
