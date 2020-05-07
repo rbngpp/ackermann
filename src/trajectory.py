@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import *
 from tf.transformations import euler_from_quaternion
@@ -13,9 +14,13 @@ from scipy.integrate import odeint
 
 class Trajectory_control():
     #attributes
+    tol = 0.01
+    msg1 = Twist()
+    deltasx = Float64()
+    deltadx = Float64()
     t = []
-    x_d = 2
-    y_d = 0
+    x_d = 1
+    y_d = 1
     theta_d = 0
     v_d = []
     w_d = []
@@ -23,18 +28,23 @@ class Trajectory_control():
     q_i=[]
     q_f=[]
     err = []
+    a = 0.21
+    b = 0.25
 
-    
 
     #methods
     def __init__(self):
         rospy.init_node('trajectory', anonymous=True) #make node
         rospy.loginfo("Starting node Trajectory control")
-        rospy.Subscriber('/ground_truth/state',Odometry, self.odometryCb)
-        rospy.sleep(1)
-        #self.twist_pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
         self.twist_pub = rospy.Publisher('/posteriori/cmd_vel', Twist, queue_size=10) 
+        self.left_pub = rospy.Publisher('sinistra/command', Float64, queue_size=10)
+        self.right_pub = rospy.Publisher('destra/command', Float64, queue_size=10)
         #rospy.Subscriber('move_base_simple/goal', PoseStamped, self.on_goal)
+        self.sub()
+
+    def sub(self):
+        rospy.Subscriber('/ground_truth/state',Odometry, self.odometryCb)
+        rospy.sleep(0.1) 
 
 
     #current robot pose
@@ -56,7 +66,7 @@ class Trajectory_control():
         theta = yaw
         return theta
 
-    def get_error(self, T):
+    def get_error(self):
         #slide 80 LDC
         #get robot position updated from callback
         x = self.q[0]
@@ -76,11 +86,42 @@ class Trajectory_control():
         rospy.loginfo('Posizione Corrente: %s', self.q)
     
     #postprocessing 
-    def unicicle_publish_control_var(self):
-        msg = Twist()
-        msg.linear.x = self.err[0]
-        self.twist_pub.publish(msg)
-            
+    def publish(self):
+        self.msg1.linear.x = self.err[0]
+        self.msg1.linear.y = 0.0
+        self.msg1.linear.z = 0.0
+        self.msg1.angular.x = 0.0
+        self.msg1.angular.y = 0.0
+        self.msg1.angular.z = 0.0
+
+        ipo = np.sqrt((self.x_d-self.q[0])**2 + (self.y_d-self.q[1])**2)
+        angolo = np.arctan2((self.y_d-self.q[1]),(self.x_d-self.q[0]))
+        rospy.loginfo(angolo)
+
+        if self.y_d-self.q[1] > 0: 
+            self.deltasx = angolo
+            R = self.b/np.tan(self.deltasx) + self.a/2
+            self.deltadx = np.arctan(self.b/(R+self.a/2))
+        else: 
+            self.deltadx = angolo
+            R = self.b/np.tan(self.deltadx) - self.a/2
+            self.deltasx = np.arctan(self.b/(R-self.a/2))
+    
+        rospy.loginfo(self.deltasx)
+        rospy.loginfo(self.deltadx)
+        
+        self.twist_pub.publish(self.msg1)
+        self.left_pub.publish(self.deltasx)
+        self.right_pub.publish(self.deltadx)
+
+    def control(self):
+        self.get_error()
+        while abs(self.err[0]) > self.tol:
+            self.publish()
+            self.sub()
+            self.get_error()
+            self.stampa()
+                     
 """
             #move robot
             self.send_velocities(v, w, theta_t)
@@ -103,9 +144,8 @@ class Trajectory_control():
 if __name__ == "__main__":
     try:
         tc=Trajectory_control()
-        tc.get_error(0)
-        #tc.unicicle_publish_control_var()
-        tc.stampa()
+        tc.control()
+        
         
     except rospy.ROSInterruptException:
         pass
