@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import unicycle as un
 from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import *
@@ -14,7 +15,7 @@ from scipy.integrate import odeint
 
 class Trajectory_control():
     #attributes
-    tol = 0.01
+    tol = 0.05
     msg1 = Twist()
     deltasx = Float64()
     deltadx = Float64()
@@ -22,30 +23,32 @@ class Trajectory_control():
     x_d = 1
     y_d = 1
     theta_d = 0
-    v_d = []
-    w_d = []
+    v_d = 2
+    w_d = 2
     q=[0, 0, 0]
     q_i=[]
     q_f=[]
     err = []
     a = 0.21
     b = 0.25
+    v = 0
+    rate = 0
 
 
     #methods
     def __init__(self):
         rospy.init_node('trajectory', anonymous=True) #make node
+        self.rate = rospy.Rate(10)    
         rospy.loginfo("Starting node Trajectory control")
         self.twist_pub = rospy.Publisher('/posteriori/cmd_vel', Twist, queue_size=10) 
-        self.left_pub = rospy.Publisher('sinistra/command', Float64, queue_size=10)
-        self.right_pub = rospy.Publisher('destra/command', Float64, queue_size=10)
+        self.left_pub = rospy.Publisher('/sinistra/command', Float64, queue_size=10)
+        self.right_pub = rospy.Publisher('/destra/command', Float64, queue_size=10)
         #rospy.Subscriber('move_base_simple/goal', PoseStamped, self.on_goal)
         self.sub()
 
     def sub(self):
         rospy.Subscriber('/ground_truth/state',Odometry, self.odometryCb)
         rospy.sleep(0.1) 
-
 
     #current robot pose
     def odometryCb(self,msg):
@@ -79,7 +82,6 @@ class Trajectory_control():
         e3 = self.theta_d - theta
         self.err = np.array([e1, e2, e3])
 
-        return self.err
 
     def  stampa(self):
         rospy.loginfo('Errore: %s', self.err)
@@ -87,65 +89,95 @@ class Trajectory_control():
     
     #postprocessing 
     def publish(self):
-        self.msg1.linear.x = self.err[0]
+         
+        self.msg1.linear.x = self.v
         self.msg1.linear.y = 0.0
         self.msg1.linear.z = 0.0
         self.msg1.angular.x = 0.0
         self.msg1.angular.y = 0.0
         self.msg1.angular.z = 0.0
-
-        ipo = np.sqrt((self.x_d-self.q[0])**2 + (self.y_d-self.q[1])**2)
-        angolo = np.arctan2((self.y_d-self.q[1]),(self.x_d-self.q[0]))
-        rospy.loginfo(angolo)
-
-        if self.y_d-self.q[1] > 0: 
-            self.deltasx = angolo
-            R = self.b/np.tan(self.deltasx) + self.a/2
-            self.deltadx = np.arctan(self.b/(R+self.a/2))
-        else: 
-            self.deltadx = angolo
-            R = self.b/np.tan(self.deltadx) - self.a/2
-            self.deltasx = np.arctan(self.b/(R-self.a/2))
-    
+        
+        rospy.loginfo('INVIO DATI')
+        rospy.loginfo(self.msg1)
         rospy.loginfo(self.deltasx)
         rospy.loginfo(self.deltadx)
-        
-        self.twist_pub.publish(self.msg1)
-        self.left_pub.publish(self.deltasx)
-        self.right_pub.publish(self.deltadx)
 
-    def control(self):
+        rospy.loginfo('POSIZIONE CORRENTE')
+        rospy.loginfo(self.q[0])
+        rospy.loginfo(self.q[1])
+        
+        self.left_pub.publish(self.deltasx) 
+        self.right_pub.publish(self.deltadx)
+        self.twist_pub.publish(self.msg1)
+        self.rate.sleep()
+
+        self.sub()
+        self.get_error()
+        
+   
+    def prova(self): 
+        xp = self.x_d - self.q[0]
+        yp = self.y_d - self.q[1]
+        self.v = np.sqrt(xp**2 + yp**2)
+        psi = np.arcsin(yp/self.v)
+        R = self.b*np.tan(psi)
+        self.deltasx = np.arctan(self.b/(R-(self.a/2)))
+        self.deltadx = np.arctan(self.b/(R+(self.a/2)))
+        self.v = self.v*np.sign(xp)
+    
+        
+
+
+if __name__ == "__main__":
+    try:
+        tc=Trajectory_control()
+        tc.get_error()
+        while abs(tc.q[0]-tc.x_d) > tc.tol:
+            tc.prova()
+            tc.publish()
+        
+    except rospy.ROSInterruptException:
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+     
+
+    """
+    def controllo(self):
         self.get_error()
         while abs(self.err[0]) > self.tol:
             self.publish()
             self.sub()
             self.get_error()
             self.stampa()
-                     
-"""
-            #move robot
-            self.send_velocities(v, w, theta_t)
-            rospy.sleep(10./1000)
+    
+
+    def controllo(self): 
+        U = un.control(self.err, self.v_d, self.w_d)
+        v = self.v_d*np.cos(self.err[2])-U[0]
+        w = self.w_d-U[1]
+        tan_psi = (self.w_d/v)*self.b
+        self.deltasx = ((np.pi/2) - np.arctan(self.b/(self.b*tan_psi+self.a/2)))
+        self.deltadx = ((np.pi/2) - np.arctan(self.b/(self.b*tan_psi-self.a/2)))
+
         
-        #stop after time
-        self.send_velocities(0,0,0)
-
-
-    #publish v, w
-    def send_velocities(self, v, w, theta):
-        twist_msg = Twist() # Creating a new message to send to the robot
-        twist_msg.linear.x = v * np.cos(theta)
-        twist_msg.linear.y = v * np.sin(theta)
-        twist_msg.angular.z = w
-        self.twist_pub.publish(twist_msg)
-"""
-
-
-if __name__ == "__main__":
-    try:
-        tc=Trajectory_control()
-        tc.control()
+        if abs(self.deltadx) > 0.785: 
+            self.deltadx = 0.785*np.sign(self.deltadx)
+        if abs(self.deltasx) > 0.785:
+            self.deltasx = 0.785*np.sign(self.deltasx)
         
-        
-    except rospy.ROSInterruptException:
-        pass
+        movimento = [v, self.deltasx , self.deltadx]
+
+        return movimento 
+
+    """
