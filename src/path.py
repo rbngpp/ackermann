@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-step_size = 0.5
+step_size = 0.25
 rho = 5.8 # turning radius
 
 qs = [
@@ -67,7 +67,6 @@ def plot_car(q):
 
 def plot_path(q0, q1):
     qs = reeds_shepp.path_sample(q0, q1, rho, step_size)
-    print(qs)
     xs = [q[0] for q in qs]
     ys = [q[1] for q in qs]
     thetas = [q[2] for q in qs]
@@ -95,13 +94,13 @@ if __name__ == "__main__":
     q0 = q[0]
     q1 = q[1]
     qd = plot_path(q0,q1)
-    """
+    print("asse X:")
+    print(qd[0])
+    print("asse Y:")
+    print(qd[1])
+    print("theta:")
+    print(qd[2])
     dist = reeds_shepp.path_length(q0, q1, rho)
-    print('dist:')
-    print(dist)
-    #print(qd[0])
     plt.title('length: {:.2f}'.format(dist))
     plt.savefig('fig/demo.png')
     plt.show()
-    plot_table(3)
-    """ 
