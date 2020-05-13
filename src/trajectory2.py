@@ -192,7 +192,7 @@ if __name__ == "__main__":
         tc.stampa()
         """
         tc=Trajectory_control()
-        tc.t = np.linspace(0, 100, 10)
+        tc.t = np.linspace(0, 100, 1000)
         trajectory = "cyrcular"  #cubic, eight, cyrcular
         tc.trajectory_generation(trajectory)
         #tc.unicicle_nonLinear_control()
