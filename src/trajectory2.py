@@ -94,6 +94,7 @@ class Trajectory_control():
         y1 = x + b * np.cos(theta)
         y2 = y + b * np.sin(theta)
         return [y1, y2, theta]
+
     def unicycle_linearized_control(self):
         # Distance of point B from the point of contact P
         b = 0.02
@@ -109,6 +110,7 @@ class Trajectory_control():
             #move robot
             self.sterzata()
             self.publish()
+
             rospy.sleep(max_t/len_t)
 
     def get_pose(self):
@@ -190,8 +192,8 @@ if __name__ == "__main__":
         tc.stampa()
         """
         tc=Trajectory_control()
-        tc.t = np.linspace(0, 100, 1000)
-        trajectory = "eight"  #cubic, eight, cyrcular
+        tc.t = np.linspace(0, 100, 10)
+        trajectory = "cyrcular"  #cubic, eight, cyrcular
         tc.trajectory_generation(trajectory)
         #tc.unicicle_nonLinear_control()
         tc.unicycle_linearized_control()

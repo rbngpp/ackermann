@@ -3,6 +3,7 @@ import numpy as np
 
 #Trajectory generation
 class Trajectory_generation():
+
     def cubic_trajectory(self, q_i, q_f, k, t=None):
         x_i = q_i[0]
         y_i = q_i[1]
@@ -43,11 +44,52 @@ class Trajectory_generation():
         return [x, y, v, w, theta]
 
     def cyrcular_trajectory(self, t):
-        R = 3
+        
+        A = [0.0, 0.0]
+        B = [0.499, 0.021]
+        C = [0.995, 0.085]  
+        
+        var = np.array([[A[0],A[1],1], [B[0],B[1],1], [C[0],C[1],1]])
+
+        notA = -(A[0]**2)-(A[1]**2)
+        notB = -(B[0]**2)-(B[1]**2)
+        notC = -(C[0]**2)-(C[1]**2)
+        noti = np.array([notA, notB, notC])
+        soluzione = np.linalg.solve(var, noti)
+
+        R = np.sqrt((soluzione[0]**2/4)+(soluzione[1]**2/4)-soluzione[2])
+
         v_d_val = 0.5 # m/s
         w_d_val = v_d_val/R
-        x_d = R * np.cos(w_d_val * t) - R
-        y_d = R * np.sin(w_d_val * t)
+
+        x_c = -soluzione[0]/2
+        y_c = -soluzione[1]/2
+
+        """
+        x_d = [0.0, 0.499, 0.995, 1.483]
+        y_d = [0.0, 0.021, 0.085, 0.192]
+        """
+        x_d = R * np.cos(w_d_val * t) + x_c
+        y_d = R * np.sin(w_d_val * t) + y_c
+
+        print(np.size(x_d))
+        
+        """
+        x_d_temp = []
+        y_d_temp = []
+        i = 0 
+        for element in x_d:
+            if x_d[i] > 0: 
+                x_d_temp.append(x_d[i])
+            if y_d[i] > 0:
+                y_d_temp.append(y_d[i])
+            
+            i = i+1
+        x_d = x_d_temp
+        y_d = y_d_temp
+        
+        """
+
         dotx_d = -R*w_d_val*np.sin(w_d_val* t)
         doty_d =  R*w_d_val*np.cos(w_d_val* t)
         v_d = np.sqrt(dotx_d**2 + doty_d**2)

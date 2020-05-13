@@ -91,13 +91,13 @@ def plot_table(cols):
     plt.show()
 
 if __name__ == "__main__":
-    q = [( 4.0, 4.0, 0.0), ( 3.0, 4.0, np.pi/2)]
+    q = [( 0.0, 0.0, 0.0), ( 3.0, 4.0, np.pi/2)]
     q0 = q[0]
     q1 = q[1]
     qd = plot_path(q0,q1)
     dist = reeds_shepp.path_length(q0, q1, rho)
     print(qd[0])
-    #plt.title('length: {:.2f}'.format(dist))
-    #plt.savefig('fig/demo.png')
-    #plt.show()
-    #plot_table(3)
+    plt.title('length: {:.2f}'.format(dist))
+    plt.savefig('fig/demo.png')
+    plt.show()
+    plot_table(3)
