@@ -95,12 +95,19 @@ if __name__ == "__main__":
     q1 = q[1]
     qd = plot_path(q0,q1)
     print("asse X:")
-    print(qd[0])
+    x = np.round(qd[0],3)
+    print(x)
     print("asse Y:")
-    print(qd[1])
+    y = np.round(qd[1],3)
+    print(y)
     print("theta:")
-    print(qd[2])
+    theta = np.round(qd[2],3)
+    print(theta)
+
+    # PLOT
+    """
     dist = reeds_shepp.path_length(q0, q1, rho)
     plt.title('length: {:.2f}'.format(dist))
     plt.savefig('fig/demo.png')
     plt.show()
+    """
