@@ -21,14 +21,14 @@ class Trajectory_control():
     deltasx = Float64()
     deltadx = Float64()
     t = []
-    x_d = 3
-    y_d = 3
-    theta_d = 0
+    x_d = []
+    y_d = []
+    theta_d = []
     v_d = 2
     w_d = 2
     dotx_d = []
     doty_d = []
-    q=[0, 0, 0]
+    q=[]
     q_i=[]
     q_f=[]
     err = []
@@ -48,56 +48,8 @@ class Trajectory_control():
         self.left_pub = rospy.Publisher('/sinistra/command', Float64, queue_size=10)
         self.right_pub = rospy.Publisher('/destra/command', Float64, queue_size=10)
         #rospy.Subscriber('move_base_simple/goal', PoseStamped, self.on_goal)
-        self.sub()
-
-    def get_point_coordinate(self, b):
-        #get robot position updated from callback
-        x = self.q[0]
-        y = self.q[1]
-        theta = self.q[2]
-        #robot point cooordinate to consider
-        y1 = x + b * np.cos(theta)
-        y2 = y + b * np.sin(theta)
-        return [y1, y2, theta]
-
-    def trajectory_generation(self, trajectory):
-        tg = Trajectory_generation()
-        if(trajectory == "cubic"):
-            #Cubic_trajectory
-            q_i = np.array([0.,0., 3.14/2]) #Initial posture (x_i,y_i,theta_i)
-            q_f = np.array([3.,6., 0.])    #Final posture   (x_f,y_f,theta_f)
-            init_final_velocity = 2
-            (self.x_d, self.y_d, self.v_d, self.w_d, self.theta_d) = tg.cubic_trajectory(q_i, q_f, init_final_velocity, self.t)   
-        elif(trajectory == "eight"):
-            #Eight trajectory
-            (self.x_d, self.y_d, self.dotx_d, self.doty_d) = tg.eight_trajectory(self.t)
-        elif (trajectory == "cyrcular"):    
-            #Cyrcular_trajectory
-            (self.x_d, self.y_d, self.v_d, self.w_d, self.theta_d, self.dotx_d, self.doty_d) = tg.cyrcular_trajectory(self.t)
-
-
-    def unicycle_linearized_control(self):
-        # Distance of point B from the point of contact P
-        b = 0.02
-        rospy.sleep(0.1)
-        max_t = self.t[len(self.t) - 1]
-        len_t = len(self.t)
-        for i in np.arange(0, len(self.t)):
-            (y1, y2, theta) = self.get_point_coordinate(b)
-            (self.v, self.w) = io_linearization_control_law(y1, y2, theta, self.x_d[i], self.y_d[i], self.dotx_d[i], self.doty_d[i], b)
-            print("linear:{} and angular:{}".format(self.v, self.w))           
-            #move robot
-            self.sterzata()
-            self.publish()
-            rospy.sleep(max_t/len_t)
-        
-        #stop after time
-        self.send_velocities(0,0,0)
-
-    def sub(self):
         rospy.Subscriber('/ground_truth/state',Odometry, self.odometryCb)
-        rospy.sleep(0.1) 
-
+    
     #current robot pose
     def odometryCb(self,msg):
         x = msg.pose.pose.position.x
@@ -117,23 +69,72 @@ class Trajectory_control():
         theta = yaw
         return theta
 
-    def get_error(self):
-        #slide 80 LDC
+    def trajectory_generation(self, trajectory):
+        tg = Trajectory_generation()
+        if(trajectory == "cubic"):
+            #Cubic_trajectory
+            q_i = np.array([0.,0., 3.14/2]) #Initial posture (x_i,y_i,theta_i)
+            q_f = np.array([3.,6., 0.])    #Final posture   (x_f,y_f,theta_f)
+            init_final_velocity = 2
+            (self.x_d, self.y_d, self.v_d, self.w_d, self.theta_d) = tg.cubic_trajectory(q_i, q_f, init_final_velocity, self.t)   
+        elif(trajectory == "eight"):
+            #Eight trajectory
+            (self.x_d, self.y_d, self.dotx_d, self.doty_d) = tg.eight_trajectory(self.t)
+        elif (trajectory == "cyrcular"):    
+            #Cyrcular_trajectory
+            (self.x_d, self.y_d, self.v_d, self.w_d, self.theta_d, self.dotx_d, self.doty_d) = tg.cyrcular_trajectory(self.t)
+
+
+    def get_point_coordinate(self, b):
         #get robot position updated from callback
         x = self.q[0]
         y = self.q[1]
         theta = self.q[2]
+        #robot point cooordinate to consider
+        y1 = x + b * np.cos(theta)
+        y2 = y + b * np.sin(theta)
+        return [y1, y2, theta]
+    def unicycle_linearized_control(self):
+        # Distance of point B from the point of contact P
+        b = 0.02
+        rospy.sleep(0.1) #wait to fill q cinfiguration
+        max_t = self.t[len(self.t) - 1]
+        len_t = len(self.t)
+        for i in np.arange(0, len(self.t)):
+            (y1, y2, theta) = self.get_point_coordinate(b)
+            (self.v, self.w) = io_linearization_control_law(y1, y2, theta, self.x_d[i], self.y_d[i], self.dotx_d[i], self.doty_d[i], b)
+            #print("linear:{} and angular:{}".format(self.v, self.w))
+            err = self.get_error(i)
+            print(err)
+            #move robot
+            self.sterzata()
+            self.publish()
+            rospy.sleep(max_t/len_t)
+
+    def get_pose(self):
+        #get robot position updated from callback
+        x = self.q[0]
+        y = self.q[1]
+        theta = self.q[2]
+        return np.array([x, y, theta])
+
+    def get_error(self, T):
+        #slide 80 LDC
+        (x, y, theta) = self.get_pose()
         #rospy.loginfo("x={} y={} th={}".format(x,y,theta))
         #compute error
-        e1 = (self.x_d - x) * np.cos(theta) + (self.y_d - y) * np.sin(theta)
-        e2 = -(self.x_d - x) * np.sin(theta) + (self.y_d - y) * np.cos(theta)
-        e3 = self.theta_d - theta
-        self.err = np.array([e1, e2, e3])
+        e1 = (self.x_d[T] - x) * np.cos(theta) + (self.y_d[T] - y) * np.sin(theta)
+        e2 = -(self.x_d[T] - x) * np.sin(theta) + (self.y_d[T] - y) * np.cos(theta)
+        e3 = 0#self.theta_d[T] - theta
+        err = np.array([e1, e2, e3])
+        return err
 
 
     def  stampa(self):
-        rospy.loginfo('Errore: %s', self.err)
-        rospy.loginfo('Posizione Corrente: %s', self.q)
+        self.get_error()
+        print (self.err)
+        #rospy.loginfo('Errore: %s', self.err)
+        #rospy.loginfo('Posizione Corrente: %s', self.q)
     
     #postprocessing 
     def publish(self):
@@ -145,27 +146,25 @@ class Trajectory_control():
         self.msg1.angular.y = 0.0
         self.msg1.angular.z = 0.0
         
-        rospy.loginfo('INVIO DATI')
-        rospy.loginfo(self.msg1)
-        rospy.loginfo(self.deltasx)
-        rospy.loginfo(self.deltadx)
+        # rospy.loginfo('INVIO DATI')
+        # rospy.loginfo(self.msg1)
+        # rospy.loginfo(self.deltasx)
+        # rospy.loginfo(self.deltadx)
 
-        rospy.loginfo('POSIZIONE CORRENTE')
-        rospy.loginfo(self.q[0])
-        rospy.loginfo(self.q[1])
+        # rospy.loginfo('POSIZIONE CORRENTE')
+        # rospy.loginfo(self.q[0])
+        # rospy.loginfo(self.q[1])
         
         self.left_pub.publish(self.deltasx) 
         self.right_pub.publish(self.deltadx)
         self.twist_pub.publish(self.msg1)
         #self.rate.sleep()
-
-        self.sub()
-        self.get_error()
+        #self.get_error()
         
    
     
     def sterzata(self):
-        if self.w == 0 or self.v == 0:
+        if abs(self.w) < 0.01:
             self.deltadx = 0
             self.deltasx = 0 
         else:
