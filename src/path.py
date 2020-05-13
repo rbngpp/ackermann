@@ -67,14 +67,17 @@ def plot_car(q):
 
 def plot_path(q0, q1):
     qs = reeds_shepp.path_sample(q0, q1, rho, step_size)
-    print(qs)
+    #print(qs)
     xs = [q[0] for q in qs]
     ys = [q[1] for q in qs]
+    thetas = [q[2] for q in qs]
     plt.plot(xs, ys, 'b-')
     plt.plot(xs, ys, 'r.')
     plot_car(q0)
     plot_car(q1)
     plt.axis('equal')
+    qd = [xs,ys,thetas]
+    return qd
 
 
 def plot_table(cols):
@@ -91,9 +94,10 @@ if __name__ == "__main__":
     q = [( 4.0, 4.0, 0.0), ( 3.0, 4.0, np.pi/2)]
     q0 = q[0]
     q1 = q[1]
-    plot_path(q0,q1)
+    qd = plot_path(q0,q1)
     dist = reeds_shepp.path_length(q0, q1, rho)
-    plt.title('length: {:.2f}'.format(dist))
-    plt.savefig('fig/demo.png')
-    plt.show()
+    print(qd[0])
+    #plt.title('length: {:.2f}'.format(dist))
+    #plt.savefig('fig/demo.png')
+    #plt.show()
     #plot_table(3)
