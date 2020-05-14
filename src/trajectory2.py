@@ -24,8 +24,8 @@ class Trajectory_control():
     x_d = []
     y_d = []
     theta_d = []
-    v_d = 2
-    w_d = 2
+    v_d = []
+    w_d = []
     dotx_d = []
     doty_d = []
     q=[]
@@ -72,36 +72,99 @@ class Trajectory_control():
 
     def trajectory_generation(self):
 
+        coordinate = [(0.0, 0.0, 0.0), (3.0, 4.0, np.pi/2)]
         step_size = 0.25
         rho = 5.8
+        qs = reeds_shepp.path_sample(coordinate[0], coordinate[1], rho, step_size)
+        xs = np.round([coordinate[0] for coordinate in qs],3)
+        ys = np.round([coordinate[1] for coordinate in qs],3)
+
+        v1 = []
+        v2 = []
+        v3 = []
+        v4 = []
+        v5 = []
+        v6 = []
+
+        segment_x = [v1, v2, v3]
+        segment_y = [v4, v5, v6]
+        i = 0
+        j = 0
+        final_x = []
+        final_y = []
+
+        if xs[i+1] > xs[i]:
+            temp = True
+            segment_x[j].append(xs[i])
+            segment_y[j].append(ys[i])
+        else:
+            temp = False
+
+        while i < len(xs)-1:
+            if temp:
+                if xs[i+1] > xs[i]:
+                    segment_x[j].append(xs[i+1])
+                    segment_y[j].append(ys[i+1])
+                else:
+                    temp = False
+                    j = j+1
+                    final_x.append(xs[i])
+                    final_y.append(ys[i])
+            if temp == False: 
+                if xs[i+1] < xs[i]:
+                  segment_x[j].append(xs[i+1])
+                  segment_y[j].append(ys[i+1])
+                else:
+                    temp = True
+                    j = j+1
+                    final_x.append(xs[i])
+                    final_y.append(ys[i])
+            i = i+1 
+
+        final_x.append(xs[i])
+        final_y.append(ys[i])
+
+        i = 0
+        R = np.zeros(j+1)
+        x_c = np.zeros(j+1)
+        y_c = np.zeros(j+1)  
+           
+        while i <= j:
+            Ax = segment_x[i][0]
+            Bx = segment_x[i][1]
+            Cx = segment_x[i][2]
+            Ay = segment_y[i][0]
+            By = segment_y[i][1]
+            Cy = segment_y[i][2]
+
+            A = [Ax, Ay]
+            B = [Bx, By]
+            C = [Cx, Cy]
+            
+            var = np.array([[A[0],A[1],1], [B[0],B[1],1], [C[0],C[1],1]])
+
+            notA = -(A[0]**2)-(A[1]**2)
+            notB = -(B[0]**2)-(B[1]**2)
+            notC = -(C[0]**2)-(C[1]**2)
+            noti = np.array([notA, notB, notC])
+            soluzione = np.linalg.solve(var, noti)
+            R[i] = np.sqrt((soluzione[0]**2/4)+(soluzione[1]**2/4)-soluzione[2])
+
+
+            x_c[i] = -soluzione[0]/2
+            y_c[i] = -soluzione[1]/2
+
+            i = i+1 
         
+        print(final_x)
+        print(final_y)
         
-        (self.x_d, self.y_d, self.v_d, self.w_d, self.theta_d, self.dotx_d, self.doty_d) = self.trajectory()
+        self.trajectory(R, x_c, y_c, final_x, final_y, segment_x, segment_y)
 
 
 
-    def trajectory(self):
-        
-        A = [0.0, 0.0]
-        B = [0.499, 0.021]
-        C = [0.995, 0.085]  
-        
-        var = np.array([[A[0],A[1],1], [B[0],B[1],1], [C[0],C[1],1]])
-
-        notA = -(A[0]**2)-(A[1]**2)
-        notB = -(B[0]**2)-(B[1]**2)
-        notC = -(C[0]**2)-(C[1]**2)
-        noti = np.array([notA, notB, notC])
-        soluzione = np.linalg.solve(var, noti)
-
-        R = np.sqrt((soluzione[0]**2/4)+(soluzione[1]**2/4)-soluzione[2])
-
-        v_d_val = 0.5 # m/s
-        w_d_val = v_d_val/R
-
-        x_c = -soluzione[0]/2
-        y_c = -soluzione[1]/2
-
+    def trajectory(self, R, x_c, y_c, final_x, final_y, segment_x, segment_y):
+       
         """        
         x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384]
         y_d = [0.0, 0.005, 0.021, 0.048, 0.085, 0.134, 0.192, 0.262, 0.341, 0.430, 0.512]
@@ -116,33 +179,47 @@ class Trajectory_control():
                     0.225  0.418  0.618  0.824  1.036  1.254  1.477  1.704  1.936  2.171
                             2.41   2.652  2.896  3.143  3.391  3.64   3.889]
         """
+        v_d_val = 0.5 # m/s
+        N = 3 
+        counter = 0 
+        self.x_d = np.asarray(self.x_d)
+        self.y_d = np.asarray(self.y_d)
+        self.dotx_d = np.asarray(self.dotx_d)
+        self.doty_d = np.asarray(self.doty_d)
+        self.v_d = np.asarray(self.v_d)
+        self.w_d = np.asarray(self.w_d)
+        while counter < N:
+            w_d_val = v_d_val/R[counter]
+            x_d_temp = R[counter] * np.cos(w_d_val * self.t) + x_c[counter]
+            y_d_temp = R[counter] * np.sin(w_d_val * self.t) + y_c[counter]
+            dotx_d_temp = -R[counter]*w_d_val*np.sin(w_d_val* self.t)
+            doty_d_temp =  R[counter]*w_d_val*np.cos(w_d_val* self.t)
 
-        x_d = R * np.cos(w_d_val * self.t) + x_c
-        y_d = R * np.sin(w_d_val * self.t) + y_c
-        dotx_d = -R*w_d_val*np.sin(w_d_val* self.t)
-        doty_d =  R*w_d_val*np.cos(w_d_val* self.t)
+            i = 0
+            k = []
+            for element in x_d_temp:
+                if x_d_temp[i] < 0 or y_d_temp[i] < 0 or y_d_temp[i] > 2.15: 
+                    k.append(i)
+                i = i+1
+            
+            x_d_temp = np.delete(x_d_temp,k)
+            y_d_temp = np.delete(y_d_temp,k)
+            dotx_d_temp = np.delete(dotx_d_temp,k)
+            doty_d_temp = np.delete(doty_d_temp,k)
 
-        i = 0
-        k = []
-        for element in x_d:
-            if x_d[i] < 0 or y_d[i] < 0 or y_d[i] > 2.15: 
-                k.append(i)
-            i = i+1
-        
-        x_d = np.delete(x_d,k)
-        y_d = np.delete(y_d,k)
-        dotx_d = np.delete(dotx_d,k)
-        doty_d = np.delete(doty_d,k)
+            v_d_temp = np.sqrt(dotx_d_temp**2 + doty_d_temp**2)
+            theta_d_temp = np.arctan2(doty_d_temp, dotx_d_temp)
+            w_d_temp = w_d_val * np.ones(len(self.t))
 
-        print(np.shape(x_d))
-        print(y_d)
-
-        v_d = np.sqrt(dotx_d**2 + doty_d**2)
-        theta_d = np.arctan2(doty_d, dotx_d)
-        w_d = w_d_val * np.ones(len(self.t))
-
-        return [x_d, y_d, v_d, w_d, theta_d, dotx_d, doty_d]
-
+            
+            self.x_d = np.append(self.x_d, x_d_temp)
+            self.y_d = np.append(self.y_d, y_d_temp)
+            self.dotx_d = np.append(self.dotx_d, dotx_d_temp)
+            self.doty_d = np.append(self.doty_d, doty_d_temp)
+            self.v_d = np.append(self.v_d, v_d_temp)
+            self.theta_d = np.append(self.theta_d, theta_d_temp)
+            self.w_d = np.append(self.w_d, w_d_temp)
+            counter = counter +1 
 
 
     def get_point_coordinate(self, b):
