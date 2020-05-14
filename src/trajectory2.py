@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import reeds_shepp
 import unicycle as un
 from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
@@ -70,6 +71,10 @@ class Trajectory_control():
 
 
     def trajectory_generation(self):
+
+        step_size = 0.25
+        rho = 5.8
+        
         
         (self.x_d, self.y_d, self.v_d, self.w_d, self.theta_d, self.dotx_d, self.doty_d) = self.trajectory()
 
@@ -98,8 +103,18 @@ class Trajectory_control():
         y_c = -soluzione[1]/2
 
         """        
-        x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384, 2.159]
-        y_d = [0.0, 0.005, 0.021, 0.048, 0.085, 0.134, 0.192, 0.262, 0.341, 0.430, 0.512, 0.403]
+        x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384]
+        y_d = [0.0, 0.005, 0.021, 0.048, 0.085, 0.134, 0.192, 0.262, 0.341, 0.430, 0.512]
+
+        x_d1 = [2.16   1.94   1.725  1.516  1.314  1.118  1.08]
+        y_d1 = [0.403  0.285  0.156  0.019 -0.127 -0.282 -0.311]
+
+        x_d2 = [1.262  1.437
+                     1.603  1.762  1.912  2.053  2.186  2.309  2.422  2.526  2.62   2.704
+                            2.778  2.841  2.894  2.936  2.968  2.989  2.999]
+        y_d2 = [-0.14   0.039
+                    0.225  0.418  0.618  0.824  1.036  1.254  1.477  1.704  1.936  2.171
+                            2.41   2.652  2.896  3.143  3.391  3.64   3.889]
         """
 
         x_d = R * np.cos(w_d_val * self.t) + x_c
