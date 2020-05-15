@@ -129,8 +129,8 @@ class Trajectory_control():
                     final_y.append(ys[i])
             if temp == False: 
                 if xs[i+1] < xs[i]:
-                  segment_x[j].append(xs[i+1])
-                  segment_y[j].append(ys[i+1])
+                    segment_x[j].append(xs[i+1])
+                    segment_y[j].append(ys[i+1])
                 else:
                     temp = True
                     slope.append(temp)
@@ -184,11 +184,9 @@ class Trajectory_control():
 
 
 
+
     def trajectory(self, R, x_c, y_c, N, slope, initial_x, initial_y, final_x, final_y, segment_x, segment_y):
-       
-        print("final_x: {}".format(final_x))
-        
-        print("N: {}".format(N))
+     
         """        
         x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384]
         y_d = [0.0, 0.005, 0.021, 0.048, 0.085, 0.134, 0.192, 0.262, 0.341, 0.430, 0.512]
@@ -211,25 +209,46 @@ class Trajectory_control():
         self.doty_d = np.asarray(self.doty_d)
         self.v_d = np.asarray(self.v_d)
         self.w_d = np.asarray(self.w_d)
+
+
         while counter < N:
             w_d_val = v_d_val/R[counter]
             x_d_temp = R[counter] * np.cos(w_d_val * self.t) + x_c[counter]
             y_d_temp = R[counter] * np.sin(w_d_val * self.t) + y_c[counter]
             dotx_d_temp = -R[counter]*w_d_val*np.sin(w_d_val* self.t)
             doty_d_temp =  R[counter]*w_d_val*np.cos(w_d_val* self.t)
+            
+            k = []
+            i = 0
+            for element in x_d_temp: 
+                if round(x_d_temp[i], 2) == round(x_d_temp[i+1]) or round(y_d_temp[i], 2) == round(y_d_temp[i+1]):
+                    k.append(i)
+                
+                if i < len(x_d_temp)-2:
+                    i = i+1
+            
+            x_d_temp = np.delete(x_d_temp,k)
+            y_d_temp = np.delete(y_d_temp,k)
+            dotx_d_temp = np.delete(dotx_d_temp,k)
+            doty_d_temp = np.delete(doty_d_temp,k)
+
+
 
             i = 0
+            j = 1
             k = []
 
             for element in x_d_temp:
                 if slope[counter]: #Controllo la direzione del tratto (se crescente o decrescente)
-                    if x_d_temp[i] < initial_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter]: #modificare estremi (<0 or <0 or >2.15)
-                        k.append(i)
+                    if x_d_temp[i] < initial_x[counter] or x_d_temp[i] > final_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter] or x_d_temp[i] > x_d_temp[j] or y_d_temp[i] > y_d_temp[j]: #modificare estremi (<0 or <0 or >2.15)
+                        k.append(i)  
                 else:
-                    if x_d_temp[i] > initial_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter]: #modificare estremi (<0 or <0 or >2.15)
+                    if x_d_temp[i] > initial_x[counter] or x_d_temp[i] < final_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter] or x_d_temp[i] < x_d_temp[j] or y_d_temp[i] < y_d_temp[j]: #modificare estremi (<0 or <0 or >2.15)
                         k.append(i)
-
+                      
                 i = i+1
+                if j < len(x_d_temp)-1: 
+                    j = j+1 
             
             x_d_temp = np.delete(x_d_temp,k)
             y_d_temp = np.delete(y_d_temp,k)
@@ -239,7 +258,6 @@ class Trajectory_control():
             v_d_temp = np.sqrt(dotx_d_temp**2 + doty_d_temp**2)
             theta_d_temp = np.arctan2(doty_d_temp, dotx_d_temp)
             w_d_temp = w_d_val * np.ones(len(self.t))
-
             
             self.x_d = np.append(self.x_d, x_d_temp)
             self.y_d = np.append(self.y_d, y_d_temp)
@@ -249,6 +267,9 @@ class Trajectory_control():
             self.theta_d = np.append(self.theta_d, theta_d_temp)
             self.w_d = np.append(self.w_d, w_d_temp)
             counter = counter +1 
+            print(self.x_d)
+            print(self.y_d)
+
 
 
     def get_point_coordinate(self, b):
@@ -271,7 +292,7 @@ class Trajectory_control():
             (y1, y2, theta) = self.get_point_coordinate(b)
             (self.v, self.w) = io_linearization_control_law(y1, y2, theta, self.x_d[i], self.y_d[i], self.dotx_d[i], self.doty_d[i], b)
             err = self.get_error(i)
-            #print(err)
+            print(err)
             #move robot
             self.sterzata()
             self.publish()
@@ -281,7 +302,7 @@ class Trajectory_control():
     def get_pose(self):
         #get robot position updated from callback
         x = self.q[0]
-        print(x)
+        #print(x)
         y = self.q[1]
         theta = self.q[2]
         return np.array([x, y, theta])
@@ -329,7 +350,6 @@ if __name__ == "__main__":
     try:
         
         tc=Trajectory_control()
-        # tc.t = np.linspace(0, 100, 1000)  DEFINITO DIRETTAMENTE ALL'INTERNO DELLA CLASSE
         tc.trajectory_generation()
         tc.unicycle_linearized_control()
 
