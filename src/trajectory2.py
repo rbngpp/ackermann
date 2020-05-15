@@ -1,26 +1,33 @@
 #!/usr/bin/env python
 
+# IMPORT FUNZIONALITA' ROS PER IL PYTHON
 import rospy
+# IMPORT LIBRERIA PER LA GENERAZIONE DELLE CURVE
 import reeds_shepp
+# ??? non richiamato
 import unicycle as un
+# IMPORT NECESSARI ALL'INVIO DEI MESSAGGI DI CONTROLLO DEL VEICOLO
 from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import *
+# IMPORT FUNZIONE PER LA TRASFORMAZIONE DI COORDINATE
 from tf.transformations import euler_from_quaternion
+# IMPORT LIBRERIE PER CALCOLI 
 import numpy as np
-#from unicycle import unicycle_error_model, control
 from scipy.integrate import odeint
 from io_linearization import io_linearization_control_law
 
 
 
 class Trajectory_control():
-    #attributes
+    
+    # DEFINIZIONE DELLE VARIABILI GLOBALI DELLA CLASSE
     tol = 0.05
     msg1 = Twist()
     deltasx = Float64()
     deltadx = Float64()
-    t = []
+    #t = []
+    t = np.linspace(0, 100, 1000)
     x_d = []
     y_d = []
     theta_d = []
@@ -72,10 +79,14 @@ class Trajectory_control():
 
     def trajectory_generation(self):
 
+        # DEFINIZIONE DELLA COORDINATA INIZIALE E DI QUELLA FINALE
         coordinate = [(0.0, 0.0, 0.0), (3.0, 4.0, np.pi/2)]
+        # PARAMETRI UTILI ALLA GENERAZIONE DELLE CURVE DI REEDSSHEPP
         step_size = 0.25
         rho = 5.8
+        # GENERAZIONE DELLE CURVE
         qs = reeds_shepp.path_sample(coordinate[0], coordinate[1], rho, step_size)
+        # ESTRAZIONE DEI PARAMETRI LUNGO I DUE ASSI E ARROTONDAMENTO ALLA TERZA DECIMALE
         xs = np.round([coordinate[0] for coordinate in qs],3)
         ys = np.round([coordinate[1] for coordinate in qs],3)
 
@@ -138,6 +149,7 @@ class Trajectory_control():
         y_c = np.zeros(N)  
            
         while i <= j:
+
             Ax = segment_x[i][0]
             Bx = segment_x[i][1]
             Cx = segment_x[i][2]
@@ -174,6 +186,9 @@ class Trajectory_control():
 
     def trajectory(self, R, x_c, y_c, N, slope, initial_x, initial_y, final_x, final_y, segment_x, segment_y):
        
+        print("final_x: {}".format(final_x))
+        
+        print("N: {}".format(N))
         """        
         x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384]
         y_d = [0.0, 0.005, 0.021, 0.048, 0.085, 0.134, 0.192, 0.262, 0.341, 0.430, 0.512]
@@ -314,7 +329,7 @@ if __name__ == "__main__":
     try:
         
         tc=Trajectory_control()
-        tc.t = np.linspace(0, 100, 1000)
+        # tc.t = np.linspace(0, 100, 1000)  DEFINITO DIRETTAMENTE ALL'INTERNO DELLA CLASSE
         tc.trajectory_generation()
         tc.unicycle_linearized_control()
 
