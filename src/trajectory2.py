@@ -90,8 +90,11 @@ class Trajectory_control():
         segment_y = [v4, v5, v6]
         i = 0
         j = 0
+        initial_x = []
+        initial_y = []
         final_x = []
         final_y = []
+        slope = []
 
         if xs[i+1] > xs[i]:
             temp = True
@@ -99,6 +102,8 @@ class Trajectory_control():
             segment_y[j].append(ys[i])
         else:
             temp = False
+        
+        slope.append(temp)
 
         while i < len(xs)-1:
             if temp:
@@ -107,6 +112,7 @@ class Trajectory_control():
                     segment_y[j].append(ys[i+1])
                 else:
                     temp = False
+                    slope.append(temp)
                     j = j+1
                     final_x.append(xs[i])
                     final_y.append(ys[i])
@@ -116,6 +122,7 @@ class Trajectory_control():
                   segment_y[j].append(ys[i+1])
                 else:
                     temp = True
+                    slope.append(temp)
                     j = j+1
                     final_x.append(xs[i])
                     final_y.append(ys[i])
@@ -125,9 +132,10 @@ class Trajectory_control():
         final_y.append(ys[i])
 
         i = 0
-        R = np.zeros(j+1)
-        x_c = np.zeros(j+1)
-        y_c = np.zeros(j+1)  
+        N = j+1 # Numero tratti
+        R = np.zeros(N)
+        x_c = np.zeros(N)
+        y_c = np.zeros(N)  
            
         while i <= j:
             Ax = segment_x[i][0]
@@ -153,17 +161,18 @@ class Trajectory_control():
 
             x_c[i] = -soluzione[0]/2
             y_c[i] = -soluzione[1]/2
+            
+            initial_x.append(Ax)
+            initial_y.append(Ay)
 
             i = i+1 
         
-        print(final_x)
-        print(final_y)
         
-        self.trajectory(R, x_c, y_c, final_x, final_y, segment_x, segment_y)
+        self.trajectory(R, x_c, y_c, N, slope, initial_x, initial_y, final_x, final_y, segment_x, segment_y)
 
 
 
-    def trajectory(self, R, x_c, y_c, final_x, final_y, segment_x, segment_y):
+    def trajectory(self, R, x_c, y_c, N, slope, initial_x, initial_y, final_x, final_y, segment_x, segment_y):
        
         """        
         x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384]
@@ -180,7 +189,6 @@ class Trajectory_control():
                             2.41   2.652  2.896  3.143  3.391  3.64   3.889]
         """
         v_d_val = 0.5 # m/s
-        N = 3 
         counter = 0 
         self.x_d = np.asarray(self.x_d)
         self.y_d = np.asarray(self.y_d)
@@ -197,9 +205,15 @@ class Trajectory_control():
 
             i = 0
             k = []
+
             for element in x_d_temp:
-                if x_d_temp[i] < 0 or y_d_temp[i] < 0 or y_d_temp[i] > 2.15: 
-                    k.append(i)
+                if slope[counter]: #Controllo la direzione del tratto (se crescente o decrescente)
+                    if x_d_temp[i] < initial_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter]: #modificare estremi (<0 or <0 or >2.15)
+                        k.append(i)
+                else:
+                    if x_d_temp[i] > initial_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter]: #modificare estremi (<0 or <0 or >2.15)
+                        k.append(i)
+
                 i = i+1
             
             x_d_temp = np.delete(x_d_temp,k)
@@ -242,7 +256,7 @@ class Trajectory_control():
             (y1, y2, theta) = self.get_point_coordinate(b)
             (self.v, self.w) = io_linearization_control_law(y1, y2, theta, self.x_d[i], self.y_d[i], self.dotx_d[i], self.doty_d[i], b)
             err = self.get_error(i)
-            print(err)
+            #print(err)
             #move robot
             self.sterzata()
             self.publish()
@@ -252,6 +266,7 @@ class Trajectory_control():
     def get_pose(self):
         #get robot position updated from callback
         x = self.q[0]
+        print(x)
         y = self.q[1]
         theta = self.q[2]
         return np.array([x, y, theta])
@@ -265,11 +280,6 @@ class Trajectory_control():
         e3 = 0#self.theta_d[T] - theta
         err = np.array([e1, e2, e3])
         return err
-
-
-    def  stampa(self):
-        self.get_error()
-        print (self.err)
 
     
     #postprocessing 

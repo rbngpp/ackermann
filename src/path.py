@@ -68,26 +68,12 @@ if __name__ == "__main__":
     theta = np.round(qd[2],3)
     print(theta)
     """
-    x_d_temp = []
-    i = 0
-    if x[i+1] > x[i]:
-        temp = True
-    else:
-        temp = False
-    for element in x:
-        if temp:
-            if x[i+1] > x[i]:
-                x_d_temp.append(x[i])
-            else:
-                temp = False
-        i = i+1
-    print(x_d_temp)
 
 
     # PLOT
-    """
+    
     dist = reeds_shepp.path_length(q0, q1, rho)
     plt.title('length: {:.2f}'.format(dist))
     plt.savefig('fig/demo.png')
     plt.show()
-    """
+    
