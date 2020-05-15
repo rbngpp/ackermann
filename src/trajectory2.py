@@ -46,6 +46,9 @@ class Trajectory_control():
     w = 0
     rate = 0
 
+    slope = []
+    SLOPE = []
+
 
     #methods
     def __init__(self):
@@ -105,7 +108,6 @@ class Trajectory_control():
         initial_y = []
         final_x = []
         final_y = []
-        slope = []
 
         if xs[i+1] > xs[i]:
             temp = True
@@ -114,7 +116,7 @@ class Trajectory_control():
         else:
             temp = False
         
-        slope.append(temp)
+        self.slope.append(temp)
 
         while i < len(xs)-1:
             if temp:
@@ -123,7 +125,7 @@ class Trajectory_control():
                     segment_y[j].append(ys[i+1])
                 else:
                     temp = False
-                    slope.append(temp)
+                    self.slope.append(temp)
                     j = j+1
                     final_x.append(xs[i])
                     final_y.append(ys[i])
@@ -133,7 +135,7 @@ class Trajectory_control():
                     segment_y[j].append(ys[i+1])
                 else:
                     temp = True
-                    slope.append(temp)
+                    self.slope.append(temp)
                     j = j+1
                     final_x.append(xs[i])
                     final_y.append(ys[i])
@@ -180,12 +182,13 @@ class Trajectory_control():
             i = i+1 
         
         
-        self.trajectory(R, x_c, y_c, N, slope, initial_x, initial_y, final_x, final_y, segment_x, segment_y)
+        self.trajectory(R, x_c, y_c, N, initial_x, initial_y, final_x, final_y, segment_x, segment_y)
+        #print(self.x_d)
+        #print(self.y_d)
 
 
 
-
-    def trajectory(self, R, x_c, y_c, N, slope, initial_x, initial_y, final_x, final_y, segment_x, segment_y):
+    def trajectory(self, R, x_c, y_c, N, initial_x, initial_y, final_x, final_y, segment_x, segment_y):
      
         """        
         x_d = [0.0, 0.249, 0.499, 0.747, 0.995, 1.240, 1.483, 1.723, 1.960, 2.193, 2.384]
@@ -209,6 +212,7 @@ class Trajectory_control():
         self.doty_d = np.asarray(self.doty_d)
         self.v_d = np.asarray(self.v_d)
         self.w_d = np.asarray(self.w_d)
+        
 
 
         while counter < N:
@@ -218,6 +222,7 @@ class Trajectory_control():
             dotx_d_temp = -R[counter]*w_d_val*np.sin(w_d_val* self.t)
             doty_d_temp =  R[counter]*w_d_val*np.cos(w_d_val* self.t)
             
+            """
             k = []
             i = 0
             for element in x_d_temp: 
@@ -226,12 +231,12 @@ class Trajectory_control():
                 
                 if i < len(x_d_temp)-2:
                     i = i+1
-            
+            # FUNZIONE DELETE PER RIMUOVERE GLI ELEMENTI DESIDERATI
             x_d_temp = np.delete(x_d_temp,k)
             y_d_temp = np.delete(y_d_temp,k)
             dotx_d_temp = np.delete(dotx_d_temp,k)
             doty_d_temp = np.delete(doty_d_temp,k)
-
+            """
 
 
             i = 0
@@ -239,22 +244,46 @@ class Trajectory_control():
             k = []
 
             for element in x_d_temp:
-                if slope[counter]: #Controllo la direzione del tratto (se crescente o decrescente)
-                    if x_d_temp[i] < initial_x[counter] or x_d_temp[i] > final_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter] or x_d_temp[i] > x_d_temp[j] or y_d_temp[i] > y_d_temp[j]: #modificare estremi (<0 or <0 or >2.15)
-                        k.append(i)  
+                if self.slope[counter]: #Controllo la direzione del tratto (se crescente o decrescente)
+                    if x_d_temp[i] < initial_x[counter] or x_d_temp[i] > final_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter] or x_d_temp[i] > x_d_temp[j] or y_d_temp[i] > y_d_temp[j]: 
+                        k.append(i)
                 else:
-                    if x_d_temp[i] > initial_x[counter] or x_d_temp[i] < final_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter] or x_d_temp[i] < x_d_temp[j] or y_d_temp[i] < y_d_temp[j]: #modificare estremi (<0 or <0 or >2.15)
+                    if x_d_temp[i] > initial_x[counter] or x_d_temp[i] < final_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter] or x_d_temp[i] < x_d_temp[j] or y_d_temp[i] < y_d_temp[j]: 
                         k.append(i)
                       
                 i = i+1
                 if j < len(x_d_temp)-1: 
                     j = j+1 
             
+            # FUNZIONE DELETE PER RIMUOVERE GLI ELEMENTI DESIDERATI
             x_d_temp = np.delete(x_d_temp,k)
             y_d_temp = np.delete(y_d_temp,k)
             dotx_d_temp = np.delete(dotx_d_temp,k)
             doty_d_temp = np.delete(doty_d_temp,k)
 
+            
+            i = 0
+            j = 1
+            k = []
+            for element in x_d_temp:
+                if self.slope[counter]:
+                    if (abs(x_d_temp[j]) < abs(x_d_temp[i])):
+                        k.append(j)
+                        i = i-1
+                else:
+                    if (abs(x_d_temp[j]) > abs(x_d_temp[i])):
+                        k.append(j)
+                        i = i-1
+                i = i+1
+                if j < len(x_d_temp)-1: 
+                    j = j+1
+
+            # FUNZIONE DELETE PER RIMUOVERE GLI ELEMENTI DESIDERATI
+            x_d_temp = np.delete(x_d_temp,k)
+            y_d_temp = np.delete(y_d_temp,k)
+            dotx_d_temp = np.delete(dotx_d_temp,k)
+            doty_d_temp = np.delete(doty_d_temp,k)
+            
             v_d_temp = np.sqrt(dotx_d_temp**2 + doty_d_temp**2)
             theta_d_temp = np.arctan2(doty_d_temp, dotx_d_temp)
             w_d_temp = w_d_val * np.ones(len(self.t))
@@ -266,9 +295,15 @@ class Trajectory_control():
             self.v_d = np.append(self.v_d, v_d_temp)
             self.theta_d = np.append(self.theta_d, theta_d_temp)
             self.w_d = np.append(self.w_d, w_d_temp)
+
+            for element in x_d_temp:
+                if self.slope[counter] == True:
+                    self.SLOPE.append(True)
+                else:
+                    self.SLOPE.append(False)
+
             counter = counter +1 
-            print(self.x_d)
-            print(self.y_d)
+
 
 
 
@@ -285,12 +320,18 @@ class Trajectory_control():
     def unicycle_linearized_control(self):
         # Distance of point B from the point of contact P
         b = 0.02
-        rospy.sleep(0.1) #wait to fill q cinfiguration
+        rospy.sleep(0.1) #wait to fill q configuration
         max_t = self.t[len(self.t) - 1]
         len_t = len(self.t)
         for i in np.arange(0, len(self.x_d)):
             (y1, y2, theta) = self.get_point_coordinate(b)
             (self.v, self.w) = io_linearization_control_law(y1, y2, theta, self.x_d[i], self.y_d[i], self.dotx_d[i], self.doty_d[i], b)
+            # inverto direzione sterzata in caso di retromarcia
+            if self.SLOPE[i]:
+                pass
+            else:
+                self.w = -self.w
+                
             err = self.get_error(i)
             print(err)
             #move robot
@@ -336,7 +377,7 @@ class Trajectory_control():
    
     
     def sterzata(self):
-        if abs(self.w) < 0.05:
+        if abs(self.w) < 0.005:
             self.deltadx = 0
             self.deltasx = 0 
         else:
