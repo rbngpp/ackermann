@@ -140,85 +140,71 @@ class Trajectory_control():
         print(xs)
         print(ys)
         
+        case = 0
+        if xs[i+1] > xs[i] and ys[i+1] > ys[i]:
+            case = 1
+        elif xs[i+1] < xs[i] and ys[i+1] > ys[i]:
+            case = 2
+        elif xs[i+1] < xs[i] and ys[i+1] < ys[i]:
+            case = 3
+        else:
+            case = 4
+
+        segment_x[j].append(xs[i])
+        segment_y[j].append(ys[i])
+
+        if case == 1:
+            self.slope_x.append(True)
+            self.slope_y.append(True)
+        elif case == 2:
+            self.slope_x.append(False)
+            self.slope_y.append(True)
+        elif case == 3:
+            self.slope_x.append(False)
+            self.slope_y.append(False)
+        else:
+            self.slope_x.append(True)
+            self.slope_y.append(False)
+        
+        previous = case
+
         while i < len(xs)-1: #effettuo il controllo su ciascun punto
+        
 
-            if self.slope_x[j] and self.slope_y[j]:
-                while xs[i+1] > xs[i] and ys[i+1] > ys[i]:
-                    segment_x[j].append(xs[i+1]) 
-                    segment_y[j].append(ys[i+1])
-                    if i < len(xs)-1:
-                        i = i+1
-                    else:
-                        break
-
-                if xs[i+1] < xs[i]:
-                    self.slope_x.append(False)
-                    self.slope_y.append(self.slope_y[j])
-                    j = j+1
-                if ys[i+1] < ys[i]:
-                    self.slope_y.append(False)
-                    self.slope_x.append(self.slope_x[j])
-
-                    j = j+1
-                    
+            if xs[i+1] > xs[i] and ys[i+1] > ys[i]:
+                case = 1
+            elif xs[i+1] < xs[i] and ys[i+1] > ys[i]:
+                case = 2
+            elif xs[i+1] < xs[i] and ys[i+1] < ys[i]:
+                case = 3
+            else:
+                case = 4
             
-            if self.slope_x[j] and self.slope_y[j] == False: 
-                while xs[i+1] > xs[i] and ys[i+1] < ys[i]:
-                    segment_x[j].append(xs[i+1]) 
-                    segment_y[j].append(ys[i+1])
-                    if i < len(xs)-1:
-                        i = i+1
-                    else:
-                        break
-
-                if xs[i+1] < xs[i]:
+            if previous != case:
+                if case == 1:
+                    self.slope_x.append(True)
+                    self.slope_y.append(True)           
+                elif case == 2:
                     self.slope_x.append(False)
-                    self.slope_y.append(self.slope_y[j])
-                    j = j+1
-                if ys[i+1] > ys[i]:
                     self.slope_y.append(True)
-                    self.slope_x.append(self.slope_x[j])
-                    j = j+1
-                    
-
-            if self.slope_x[j] == False and self.slope_y[j]: 
-                while xs[i+1] < xs[i] and ys[i+1] > ys[i]:
-                    segment_x[j].append(xs[i+1]) 
-                    segment_y[j].append(ys[i+1])
-                    if i < len(xs)-1:
-                        i = i+1
-                    else:
-                        break
-
-                if xs[i+1] > xs[i]:
-                    self.slope_x.append(True)
-                    self.slope_y.append(self.slope_y[j])
-                    j = j+1
-                if ys[i+1] < ys[i]:
+                elif case == 3:
+                    self.slope_x.append(False)
                     self.slope_y.append(False)
-                    self.slope_x.append(self.slope_x[j])
-                    j = j+1
-                    
-
-                
-            if self.slope_x[j] == False and self.slope_y[j] == False: 
-                while xs[i+1] < xs[i] and ys[i+1] < ys[i]:
-                    segment_x[j].append(xs[i+1]) 
-                    segment_y[j].append(ys[i+1])
-                    if i < len(xs)-1:
-                        i = i+1
-                    else:
-                        break
-
-                if xs[i+1] > xs[i]:
+                else:
                     self.slope_x.append(True)
-                    self.slope_y.append(self.slope_y[j])
-                    j = j+1
-                if ys[i+1] > ys[i]:
-                    self.slope_y.append(True)
-                    self.slope_x.append(self.slope_x[j])
-                    j = j+1
-                    
+                    self.slope_y.append(False)
+            
+                j = j+1 # incremento il numero dei tratti totali 
+                final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
+                final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y
+            else: 
+                segment_x[j].append(xs[i+1]) # inserisco il nuovo valore all'interno dei punti appartenenti al tratto 
+                segment_y[j].append(ys[i+1])
+            
+            i = i+1
+            previous = case
+
+            
 
 
             """
@@ -257,6 +243,12 @@ class Trajectory_control():
 
         final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
         final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y
+
+        print(segment_x)
+        print(segment_y)
+
+        print(final_x)
+        print(final_y)
 
         i = 0 # ripristino un contatore generico al valore nullo
         N = j+1 # Numero totale dei tratti
@@ -298,10 +290,6 @@ class Trajectory_control():
             i = i +1
                 
         # Richiamo il metodo "trajectory" per l'estrazione dei segmenti rappresentanti le curve di Reeds Shepp a partire dalle circonferenze calcolate
-        print(initial_x)
-        print(initial_y)
-        print(final_x)
-        print(final_y)
         self.trajectory(R, x_c, y_c, N, initial_x, initial_y, final_x, final_y, segment_x, segment_y)
 
 
