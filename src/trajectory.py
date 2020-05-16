@@ -16,7 +16,7 @@ from tf.transformations import euler_from_quaternion
 # IMPORT LIBRERIE PER CALCOLI 
 import numpy as np
 from scipy.integrate import odeint
-#from io_linearization import io_linearization_control_law
+
 
 # ------------------------------------------------
 # DEFINIZIONE DELLA CLASSE PRINCIPALE
