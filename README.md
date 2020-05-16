@@ -5,14 +5,25 @@ Car-like wehicle on Gazebo and path planner.
 ![CMAKE](https://img.shields.io/badge/CMAKE-inside-lightgrey)
 ![PYTHON](https://img.shields.io/badge/PYTHON-inside-blueviolet)
 
-*A seguito di modifiche alla CMakeList si consiglia di effettuare nuovamente il catkin_make [29.04.2020]*
+Step per clonare correttamente questo progetto:
 
+1. Effettuare il GIT CLONE di questo repository nella cartella catkin_ws/src:
 
-Pacchetti da installare una volta:
+` cd catkin_ws/src `
+` git clone https://github.com/rbngpp/ackermann.git `
+
+2. Effettuare il catkin_make:
+` cd ~/catkin_ws `
+` catkin_make `
+
+3. Installare la libreria readchar per il controllo tramite comandi W-A-S-D:
 
 ` pip install readchar ` 
 
+4. Installare i ros-melodic-controllers:
+
 ` sudo apt-get install ros-melodic-ros-controllers `
+
 
 Per lanciare la simulazione bisogna utilizzare la stringa seguente:
 
@@ -20,4 +31,9 @@ Per lanciare la simulazione bisogna utilizzare la stringa seguente:
 
 Per lanciare il controllo W-A-S-D: 
 
-` rosrun ackermann wasd_movement.py `
+` rosrun ackermann wasd.py `
+
+Per lanciare il controllo con curve di ReedsShepp:
+
+` rosrun ackermann trajectory.py `
+
