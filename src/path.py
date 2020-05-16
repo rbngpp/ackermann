@@ -68,8 +68,6 @@ if __name__ == "__main__":
     theta = np.round(qd[2],3)
     print(theta)
     """
-
-
     # PLOT
     
     dist = reeds_shepp.path_length(q0, q1, rho)
