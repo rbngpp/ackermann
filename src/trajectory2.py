@@ -4,8 +4,6 @@
 import rospy
 # IMPORT LIBRERIA PER LA GENERAZIONE DELLE CURVE
 import reeds_shepp
-# ??? non richiamato
-import unicycle as un
 # IMPORT NECESSARI ALL'INVIO DEI MESSAGGI DI CONTROLLO DEL VEICOLO
 from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
@@ -26,7 +24,6 @@ class Trajectory_control():
     msg1 = Twist()
     deltasx = Float64()
     deltadx = Float64()
-    #t = []
     t = np.linspace(0, 100, 1000)
     x_d = []
     y_d = []
@@ -84,7 +81,7 @@ class Trajectory_control():
     def trajectory_generation(self):
 
         # DEFINIZIONE DELLA COORDINATA INIZIALE E DI QUELLA FINALE
-        coordinate = [(0.0, 0.0, 0.0), (0.0, 4.0, np.pi)]
+        coordinate = [(0.0, 0.0, 0.0), (-2.0, 4.0, np.pi)]
         # PARAMETRI UTILI ALLA GENERAZIONE DELLE CURVE DI REEDSSHEPP
         step_size = 0.25
         rho = 5.8
@@ -118,10 +115,11 @@ class Trajectory_control():
 
         if xs[i+1] > xs[i]:
             temp = True
-            segment_x[j].append(xs[i])
-            segment_y[j].append(ys[i])
         else:
             temp = False
+        
+        segment_x[j].append(xs[i])
+        segment_y[j].append(ys[i])
         
         self.slope_x.append(temp)
 
@@ -175,8 +173,19 @@ class Trajectory_control():
         R = np.zeros(N)
         x_c = np.zeros(N)
         y_c = np.zeros(N)  
+
+        print(segment_x)
+        print(segment_y)
            
         while i <= j:
+            
+            if len(segment_x[i]) < 3 or len(segment_y[i]) < 3:                  
+                segment_x[i].append(segment_x[i][0]+0.1)    
+                segment_x[i].append(segment_x[i][0]-0.1)
+                segment_y[i].append(segment_y[i][0]+0.1)    
+                segment_y[i].append(segment_y[i][0]-0.1)
+            
+
 
             Ax = segment_x[i][0]
             Bx = segment_x[i][1]
@@ -184,11 +193,10 @@ class Trajectory_control():
             Ay = segment_y[i][0]
             By = segment_y[i][1]
             Cy = segment_y[i][2]
-
             A = [Ax, Ay]
             B = [Bx, By]
             C = [Cx, Cy]
-            
+                
             var = np.array([[A[0],A[1],1], [B[0],B[1],1], [C[0],C[1],1]])
 
             notA = -(A[0]**2)-(A[1]**2)
@@ -201,13 +209,13 @@ class Trajectory_control():
 
             x_c[i] = -soluzione[0]/2
             y_c[i] = -soluzione[1]/2
-            
+                
             initial_x.append(Ax)
             initial_y.append(Ay)
 
-            i = i+1 
-        
-        
+            i = i +1
+                
+            
         self.trajectory(R, x_c, y_c, N, initial_x, initial_y, final_x, final_y, segment_x, segment_y)
         #print(self.x_d)
         #print(self.y_d)
