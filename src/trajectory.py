@@ -119,27 +119,7 @@ class Trajectory_control():
         final_x = []
         final_y = []
 
-        # CONTROLLO SE IL PRIMO TRATTO PREVEDA O MENO UN INCREMENTO LUNGO X, DUNQUE AGGIORNO SLOPE_X
-        if xs[i+1] > xs[i]:
-            temp = True
-        else:
-            temp = False
-        
-        segment_x[j].append(xs[i])
-        segment_y[j].append(ys[i])
-        
-        self.slope_x.append(temp)
-
-        # CONTROLLO SE IL PRIMO TRATTO PREVEDA O MENO UN INCREMENTO LUNGO Y, DUNQUE AGGIORNO SLOPE_Y
-        if ys[i+1] > ys[i]: 
-            self.slope_y.append(True)
-        else: 
-            self.slope_y.append(False)
-
-        # CONTROLLO I TRATTI SUCCESSIVI AL PRIMO
-        print(xs)
-        print(ys)
-        
+        # CONTROLLO SE IL PRIMO TRATTO PREVEDA O MENO UN INCREMENTO LUNGO X o LUNGO Y, DUNQUE AGGIORNO SLOPE_X e SLOPE Y
         case = 0
         if xs[i+1] > xs[i] and ys[i+1] > ys[i]:
             case = 1
@@ -168,8 +148,8 @@ class Trajectory_control():
         
         previous = case
 
-        while i < len(xs)-1: #effettuo il controllo su ciascun punto
-        
+        # ESTENDO IL CONTROLLO A TUTTI I PUNTI DELLA TRAIETTORIA
+        while i < len(xs)-1: #effettuo il controllo fin quando non si esaurisce il vettore 'xs' contenente i punti lungo x 
 
             if xs[i+1] > xs[i] and ys[i+1] > ys[i]:
                 case = 1
@@ -181,16 +161,16 @@ class Trajectory_control():
                 case = 4
             
             if previous != case:
-                if case == 1:
+                if case == 1: # X > 0 , Y > 0
                     self.slope_x.append(True)
                     self.slope_y.append(True)           
-                elif case == 2:
+                elif case == 2: # X < 0 , Y > 0
                     self.slope_x.append(False)
                     self.slope_y.append(True)
-                elif case == 3:
+                elif case == 3: # X <0 , Y < 0
                     self.slope_x.append(False)
                     self.slope_y.append(False)
-                else:
+                else: # X > 0 , Y < 0
                     self.slope_x.append(True)
                     self.slope_y.append(False)
             
@@ -201,54 +181,11 @@ class Trajectory_control():
                 segment_x[j].append(xs[i+1]) # inserisco il nuovo valore all'interno dei punti appartenenti al tratto 
                 segment_y[j].append(ys[i+1])
             
-            i = i+1
+            i = i+1 # Incremento il contatore per valutare il punto successivo
             previous = case
-
-            
-
-
-            """
-            if temp: #qualora il punto precedente appartenga ad un tratto che si incrementa in senso positivo
-                if xs[i+1] > xs[i]: # qualora il tratto si stia ancora incrementando
-                    segment_x[j].append(xs[i+1]) # inserisco il nuovo valore all'interno dei punti appartenenti al tratto 
-                    segment_y[j].append(ys[i+1])
-                else: # in caso contrario considero il nuovo tratto con pendenza opposta rispetto al precedente
-                    temp = False
-                    self.slope_x.append(temp)
-                    if ys[i+1] > ys[i]: # valuto il verso del tratto anche rispetto all'asse Y
-                        self.slope_y.append(True)
-                    else: 
-                        self.slope_y.append(False)
-                    j = j+1 # incremento il numero dei tratti totali 
-                    final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
-                    final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y
-            if temp == False: #qualora il punto precedente appartenga ad un tratto che si incrementa in senso negativo
-                if xs[i+1] < xs[i]: #qualora il decremento non sia ancora terminato
-                    segment_x[j].append(xs[i+1]) # inserisco il nuovo valore all'interno dei punti appartenenti al tratto 
-                    segment_y[j].append(ys[i+1])
-                else: # in caso contrario considero il nuovo tratto con pendenza opposta rispetto al precedente
-                    temp = True
-                    self.slope_x.append(temp)
-
-                    if ys[i+1] > ys[i]:   # valuto il verso del tratto anche rispetto all'asse Y
-                        self.slope_y.append(True)
-                    else: 
-                        self.slope_y.append(False)
-                    j = j+1 # incremento il numero dei tratti totali 
-                    final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
-                    final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y        
-            i = i+1 
-            """
-            
 
         final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
         final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y
-
-        print(segment_x)
-        print(segment_y)
-
-        print(final_x)
-        print(final_y)
 
         i = 0 # ripristino un contatore generico al valore nullo
         N = j+1 # Numero totale dei tratti
@@ -305,10 +242,6 @@ class Trajectory_control():
         self.doty_d = np.asarray(self.doty_d)
         self.v_d = np.asarray(self.v_d)
         self.w_d = np.asarray(self.w_d)
-        print(initial_x)
-        print(initial_y)
-        print(final_x)
-        print(final_y)
 
 
         # Calcolo di w_d,x_d,y_d,dotx_d e doty_d per ciascuna delle circonferenze individuate
