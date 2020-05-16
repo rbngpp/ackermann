@@ -2,18 +2,23 @@
 Car-like wehicle on Gazebo and path planner.
 
 ![ROS](https://img.shields.io/badge/ROS-MELODIC-9cf)
-![CMAKE](https://img.shields.io/badge/CMAKE-inside-lightgrey)
 ![PYTHON](https://img.shields.io/badge/PYTHON-inside-blueviolet)
+![C++](https://img.shields.io/badge/C%2B%2B-inside-ff69b4)
+![CMAKE](https://img.shields.io/badge/CMAKE-inside-lightgrey)
+
 
 Step per clonare correttamente questo progetto:
 
 1. Effettuare il GIT CLONE di questo repository nella cartella catkin_ws/src:
 
 ` cd catkin_ws/src `
+
 ` git clone https://github.com/rbngpp/ackermann.git `
 
 2. Effettuare il catkin_make:
+
 ` cd ~/catkin_ws `
+
 ` catkin_make `
 
 3. Installare la libreria readchar per il controllo tramite comandi W-A-S-D:
