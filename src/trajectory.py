@@ -96,7 +96,7 @@ class Trajectory_control():
     def trajectory_generation(self):
 
         # DEFINIZIONE DELLA COORDINATA INIZIALE E DI QUELLA FINALE
-        coordinate = [(0.0, 0.0, 0.0), (0.0, 4.0, np.pi)]
+        coordinate = [(0.0, 0.0, 0.0), (-4.0, 3.0, np.pi)]
         # PARAMETRI UTILI ALLA GENERAZIONE DELLE CURVE DI REEDSSHEPP
         step_size = 0.25
         rho = 5.8
@@ -137,7 +137,91 @@ class Trajectory_control():
             self.slope_y.append(False)
 
         # CONTROLLO I TRATTI SUCCESSIVI AL PRIMO
+        print(xs)
+        print(ys)
+        
         while i < len(xs)-1: #effettuo il controllo su ciascun punto
+
+            if self.slope_x[j] and self.slope_y[j]:
+                while xs[i+1] > xs[i] and ys[i+1] > ys[i]:
+                    segment_x[j].append(xs[i+1]) 
+                    segment_y[j].append(ys[i+1])
+                    if i < len(xs)-1:
+                        i = i+1
+                    else:
+                        break
+
+                if xs[i+1] < xs[i]:
+                    self.slope_x.append(False)
+                    self.slope_y.append(self.slope_y[j])
+                    j = j+1
+                if ys[i+1] < ys[i]:
+                    self.slope_y.append(False)
+                    self.slope_x.append(self.slope_x[j])
+
+                    j = j+1
+                    
+            
+            if self.slope_x[j] and self.slope_y[j] == False: 
+                while xs[i+1] > xs[i] and ys[i+1] < ys[i]:
+                    segment_x[j].append(xs[i+1]) 
+                    segment_y[j].append(ys[i+1])
+                    if i < len(xs)-1:
+                        i = i+1
+                    else:
+                        break
+
+                if xs[i+1] < xs[i]:
+                    self.slope_x.append(False)
+                    self.slope_y.append(self.slope_y[j])
+                    j = j+1
+                if ys[i+1] > ys[i]:
+                    self.slope_y.append(True)
+                    self.slope_x.append(self.slope_x[j])
+                    j = j+1
+                    
+
+            if self.slope_x[j] == False and self.slope_y[j]: 
+                while xs[i+1] < xs[i] and ys[i+1] > ys[i]:
+                    segment_x[j].append(xs[i+1]) 
+                    segment_y[j].append(ys[i+1])
+                    if i < len(xs)-1:
+                        i = i+1
+                    else:
+                        break
+
+                if xs[i+1] > xs[i]:
+                    self.slope_x.append(True)
+                    self.slope_y.append(self.slope_y[j])
+                    j = j+1
+                if ys[i+1] < ys[i]:
+                    self.slope_y.append(False)
+                    self.slope_x.append(self.slope_x[j])
+                    j = j+1
+                    
+
+                
+            if self.slope_x[j] == False and self.slope_y[j] == False: 
+                while xs[i+1] < xs[i] and ys[i+1] < ys[i]:
+                    segment_x[j].append(xs[i+1]) 
+                    segment_y[j].append(ys[i+1])
+                    if i < len(xs)-1:
+                        i = i+1
+                    else:
+                        break
+
+                if xs[i+1] > xs[i]:
+                    self.slope_x.append(True)
+                    self.slope_y.append(self.slope_y[j])
+                    j = j+1
+                if ys[i+1] > ys[i]:
+                    self.slope_y.append(True)
+                    self.slope_x.append(self.slope_x[j])
+                    j = j+1
+                    
+
+
+            """
             if temp: #qualora il punto precedente appartenga ad un tratto che si incrementa in senso positivo
                 if xs[i+1] > xs[i]: # qualora il tratto si stia ancora incrementando
                     segment_x[j].append(xs[i+1]) # inserisco il nuovo valore all'interno dei punti appartenenti al tratto 
@@ -168,6 +252,8 @@ class Trajectory_control():
                     final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
                     final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y        
             i = i+1 
+            """
+            
 
         final_x.append(xs[i]) # aggiorno il valore finale del tratto rispetto all'asse X
         final_y.append(ys[i]) # aggiorno il valore finale del tratto rispetto all'asse Y
@@ -212,6 +298,10 @@ class Trajectory_control():
             i = i +1
                 
         # Richiamo il metodo "trajectory" per l'estrazione dei segmenti rappresentanti le curve di Reeds Shepp a partire dalle circonferenze calcolate
+        print(initial_x)
+        print(initial_y)
+        print(final_x)
+        print(final_y)
         self.trajectory(R, x_c, y_c, N, initial_x, initial_y, final_x, final_y, segment_x, segment_y)
 
 
@@ -227,7 +317,11 @@ class Trajectory_control():
         self.doty_d = np.asarray(self.doty_d)
         self.v_d = np.asarray(self.v_d)
         self.w_d = np.asarray(self.w_d)
-        
+        print(initial_x)
+        print(initial_y)
+        print(final_x)
+        print(final_y)
+
 
         # Calcolo di w_d,x_d,y_d,dotx_d e doty_d per ciascuna delle circonferenze individuate
         while counter < N:
@@ -236,6 +330,7 @@ class Trajectory_control():
             y_d_temp = R[counter] * np.sin(w_d_val * self.t) + y_c[counter]
             dotx_d_temp = -R[counter]*w_d_val*np.sin(w_d_val* self.t)
             doty_d_temp =  R[counter]*w_d_val*np.cos(w_d_val* self.t)
+
             
             # Inizializzazione di contatori ed elementi utili
             i = 0
@@ -271,6 +366,7 @@ class Trajectory_control():
             dotx_d_temp = np.delete(dotx_d_temp,k)
             doty_d_temp = np.delete(doty_d_temp,k)
 
+            
             # Secondo controllo per rimozione di eventuali punti in eccesso
             i = 0
             j = 1
@@ -307,6 +403,7 @@ class Trajectory_control():
             self.theta_d = np.append(self.theta_d, theta_d_temp)
             self.w_d = np.append(self.w_d, w_d_temp)
 
+           
             # Incremento del contatore per passare al calcolo del segmento successivo
             counter = counter +1 
             
@@ -362,6 +459,7 @@ class Trajectory_control():
         e2 = -(self.x_d[T] - x) * np.sin(theta) + (self.y_d[T] - y) * np.cos(theta)
         e3 = 0
         err = np.array([e1, e2, e3])
+        print(err)
         return err
 
     

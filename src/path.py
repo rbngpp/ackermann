@@ -53,21 +53,13 @@ def plot_table(cols):
     plt.show()
 
 if __name__ == "__main__":
-    q = [( 0.0, 0.0, 0.0), ( -2.0, 4.0, np.pi)]
+    q = [(3.0, 4.0, np.pi/2), (0.0, 0.0, 0.0)]
     q0 = q[0]
     q1 = q[1]
     qd = plot_path(q0,q1)
     print("asse X:")
     x = np.round(qd[0],3)
     print(x)
-    """
-    print("asse Y:")
-    y = np.round(qd[1],3)
-    print(y)
-    print("theta:")
-    theta = np.round(qd[2],3)
-    print(theta)
-    """
     # PLOT
     
     dist = reeds_shepp.path_length(q0, q1, rho)
