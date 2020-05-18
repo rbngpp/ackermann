@@ -287,6 +287,29 @@ class Trajectory_control():
             y_d_temp = np.delete(y_d_temp,k)
             dotx_d_temp = np.delete(dotx_d_temp,k)
             doty_d_temp = np.delete(doty_d_temp,k)
+
+            # Secondo controllo per rimozione di eventuali punti in eccesso
+            i = 0
+            j = 1
+            k = []
+            for element in x_d_temp:
+                if self.slope_x[counter]:
+                    if x_d_temp[j] < x_d_temp[i]:
+                        k.append(j)
+                        i = i-1
+                else:
+                    if x_d_temp[j] > x_d_temp[i]:
+                        k.append(j)
+                        i = i-1
+                i = i+1
+                if j < len(x_d_temp)-1: 
+                    j = j+1
+
+            # Rimozione degli elementi superflui associati agli altri vettori
+            x_d_temp = np.delete(x_d_temp,k)
+            y_d_temp = np.delete(y_d_temp,k)
+            dotx_d_temp = np.delete(dotx_d_temp,k)
+            doty_d_temp = np.delete(doty_d_temp,k)
             
 
 
