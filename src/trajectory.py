@@ -16,6 +16,7 @@ from tf.transformations import euler_from_quaternion
 # IMPORT LIBRERIE PER CALCOLI 
 import numpy as np
 from scipy.integrate import odeint
+import matplotlib.pyplot as plt
 
 
 # ------------------------------------------------
@@ -96,7 +97,7 @@ class Trajectory_control():
     def trajectory_generation(self):
 
         # DEFINIZIONE DELLA COORDINATA INIZIALE E DI QUELLA FINALE
-        coordinate = [(0.0, 0.0, 0.0), (-4.0, 3.0, np.pi)]
+        coordinate = [(0.0,0.0,0.0), (0.0, 4.0, np.pi)]
         # PARAMETRI UTILI ALLA GENERAZIONE DELLE CURVE DI REEDSSHEPP
         step_size = 0.25
         rho = 5.8
@@ -243,7 +244,6 @@ class Trajectory_control():
         self.v_d = np.asarray(self.v_d)
         self.w_d = np.asarray(self.w_d)
 
-
         # Calcolo di w_d,x_d,y_d,dotx_d e doty_d per ciascuna delle circonferenze individuate
         while counter < N:
             w_d_val = v_d_val/R[counter]
@@ -257,7 +257,7 @@ class Trajectory_control():
             i = 0
             j = 1
             k = []
-
+            
             # Rimozione da ciascuna circonferenza dei punti non facenti parte delle curve di Reeds Shepp
             # Il controllo si effettua a seconda dell'andamento della curva rispetto agli assi X ed Y
             for element in x_d_temp:
@@ -281,36 +281,78 @@ class Trajectory_control():
                 if j < len(x_d_temp)-1: 
                     j = j+1 
             
-            # Rimozione degli elementi superflui associati agli altri vettori
-            x_d_temp = np.delete(x_d_temp,k)
-            y_d_temp = np.delete(y_d_temp,k)
-            dotx_d_temp = np.delete(dotx_d_temp,k)
-            doty_d_temp = np.delete(doty_d_temp,k)
-
-            
-            # Secondo controllo per rimozione di eventuali punti in eccesso
-            i = 0
-            j = 1
-            k = []
-            for element in x_d_temp:
-                if self.slope_x[counter]:
-                    if x_d_temp[j] < x_d_temp[i]:
-                        k.append(j)
-                        i = i-1
-                else:
-                    if x_d_temp[j] > x_d_temp[i]:
-                        k.append(j)
-                        i = i-1
-                i = i+1
-                if j < len(x_d_temp)-1: 
-                    j = j+1
-
+          
             # Rimozione degli elementi superflui associati agli altri vettori
             x_d_temp = np.delete(x_d_temp,k)
             y_d_temp = np.delete(y_d_temp,k)
             dotx_d_temp = np.delete(dotx_d_temp,k)
             doty_d_temp = np.delete(doty_d_temp,k)
             
+
+
+            if len(x_d_temp) < 2:
+                x_d_temp = R[counter] * np.cos(w_d_val * self.t) + x_c[counter]
+                y_d_temp = R[counter] * np.sin(w_d_val * self.t) + y_c[counter]
+                dotx_d_temp = -R[counter]*w_d_val*np.sin(w_d_val* self.t)
+                doty_d_temp =  R[counter]*w_d_val*np.cos(w_d_val* self.t)
+                i = 0
+                j = 1
+                k = []
+                
+                # Rimozione da ciascuna circonferenza dei punti non facenti parte delle curve di Reeds Shepp
+                # Il controllo si effettua a seconda dell'andamento della curva rispetto agli assi X ed Y
+                for element in x_d_temp:
+                    if self.slope_x[counter] and self.slope_y[counter]: #Controllo la direzione del tratto (se crescente o decrescente)
+                        if x_d_temp[i] < initial_x[counter] or x_d_temp[i] > final_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter]: 
+                            k.append(i)
+
+                    elif self.slope_x[counter] == False and self.slope_y[counter]: 
+                        if x_d_temp[i] > initial_x[counter] or x_d_temp[i] < final_x[counter] or y_d_temp[i] < initial_y[counter] or y_d_temp[i] > final_y[counter]: 
+                            k.append(i)
+
+                    elif self.slope_x[counter] and self.slope_y[counter] == False: 
+                        if x_d_temp[i] < initial_x[counter] or x_d_temp[i] > final_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter]: 
+                            k.append(i)
+            
+                    else: 
+                        if x_d_temp[i] > initial_x[counter] or x_d_temp[i] < final_x[counter] or y_d_temp[i] > initial_y[counter] or y_d_temp[i] < final_y[counter]: 
+                            k.append(i)
+                        
+                    i = i+1
+                    if j < len(x_d_temp)-1: 
+                        j = j+1 
+                
+                i = 0 
+                x_d_temp = np.delete(x_d_temp,k)
+                y_d_temp = np.delete(y_d_temp,k)
+                dotx_d_temp = np.delete(dotx_d_temp,k)
+                doty_d_temp = np.delete(doty_d_temp,k)
+                control = True
+                k = []
+                j = 1
+                for element in x_d_temp:
+                    if abs(x_d_temp[j] - x_d_temp[i]) > 0.5 and control: 
+                        control = False
+                    if control == False: 
+                        k.append(i)
+                    
+                    i = i+1
+
+                    if j < len(x_d_temp)-1: 
+                        j = j+1 
+
+                # Rimozione degli elementi superflui associati agli altri vettori
+                x_d_temp = np.delete(x_d_temp,k)
+                y_d_temp = np.delete(y_d_temp,k)
+                dotx_d_temp = np.delete(dotx_d_temp,k)
+                doty_d_temp = np.delete(doty_d_temp,k)
+                
+                x_d_temp = x_d_temp[::-1]
+                y_d_temp = y_d_temp[::-1]
+                dotx_d_temp = dotx_d_temp[::-1]
+                doty_d_temp = doty_d_temp[::-1]
+            
+            print(x_d_temp)
             v_d_temp = np.sqrt(dotx_d_temp**2 + doty_d_temp**2)
             theta_d_temp = np.arctan2(doty_d_temp, dotx_d_temp)
             w_d_temp = w_d_val * np.ones(len(self.t))
