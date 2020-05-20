@@ -148,6 +148,7 @@ class Trajectory_control():
             self.slope_y.append(False)
         
         previous = case
+        print(len(xs))
 
         # ESTENDO IL CONTROLLO A TUTTI I PUNTI DELLA TRAIETTORIA
         while i < len(xs)-1: #effettuo il controllo fin quando non si esaurisce il vettore 'xs' contenente i punti lungo x 
@@ -375,7 +376,7 @@ class Trajectory_control():
                 dotx_d_temp = dotx_d_temp[::-1]
                 doty_d_temp = doty_d_temp[::-1]
             
-            print(x_d_temp)
+            
             v_d_temp = np.sqrt(dotx_d_temp**2 + doty_d_temp**2)
             theta_d_temp = np.arctan2(doty_d_temp, dotx_d_temp)
             w_d_temp = w_d_val * np.ones(len(self.t))
@@ -491,18 +492,22 @@ def io_linearization_control_law(y1, y2, theta, y1d, y2d, doty1d, doty2d, b):
         return np.array([v, w])   
 
 def nonLinear_control_law(e, v_d, w_d):
-    #k2 = 0.5;
-    global a, zeta
-    #k2 = (a**2 -w_d**2)/v_d
+    a = 5
+    zeta = 0.8
+    k1 = 2*zeta*np.sqrt(v_d**2 + a*w_d**2)
     k2 = a
+    k3 = 2*zeta*np.sqrt(v_d**2 + a*w_d**2)
+    #global a, zeta
+    #k2 = (a**2 -w_d**2)/v_d
+    #k2 = 0.6
     
-    u_1 = -k1(v_d, w_d) * e[0]
+    u_1 = -k1 * e[0]
     
     # Be sure that if e[2] = 0 sin(e[2])/e[2] is computes to 1.0
     if e[2] == 0:
-        u_2 = -k2*v_d*e[1] - k3(v_d,w_d)*e[2]
+        u_2 = -k2*v_d*e[1] - k3*e[2]
     else:
-        u_2 = -k2*v_d*np.sin(e[2])/e[2]*e[1] - k3(v_d,w_d)*e[2]
+        u_2 = -k2*v_d*np.sin(e[2])/e[2]*e[1] - k3*e[2]
     #compute control input
     v = v_d * np.cos(e[2]) - u_1
     w = w_d - u_2
