@@ -53,7 +53,7 @@ def plot_table(cols):
     plt.show()
 
 if __name__ == "__main__":
-    q = [(0.0, 0.0, 0.0), (4.0, 4.0, np.pi)]
+    q = [(0.0, 0.0, 0.0), (0.0, 4.0, np.pi)]
     q0 = q[0]
     q1 = q[1]
     qd = plot_path(q0,q1)
