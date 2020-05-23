@@ -53,7 +53,7 @@ def plot_table(cols):
     plt.show()
 
 if __name__ == "__main__":
-    q = [(0.0, 0.0, 0.0), (0.0, 4.0, np.pi)]
+    q = [(2.0, -3.0, 2/3*np.pi),(0.0,0.0, np.pi/6)]
     q0 = q[0]
     q1 = q[1]
     qd = plot_path(q0,q1)
@@ -61,7 +61,8 @@ if __name__ == "__main__":
     x = np.round(qd[0],3)
     print(x)
     # PLOT
-    
+    tmax = reeds_shepp.path_length(q[0], q[1], rho)
+    print(tmax)
     dist = reeds_shepp.path_length(q0, q1, rho)
     plt.title('length: {:.2f}'.format(dist))
     plt.savefig('fig/demo.png')
