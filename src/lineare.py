@@ -97,7 +97,7 @@ class Trajectory_control():
     def trajectory_generation(self):
 
         # DEFINIZIONE DELLA COORDINATA INIZIALE E DI QUELLA FINALE
-        coordinate = [(0.0,0.0,0.0),(0.0,4.0, np.pi)]
+        coordinate = [(0.0,0.0,0.0),(3.0,-4.0,np.pi)]
         # PARAMETRI UTILI ALLA GENERAZIONE DELLE CURVE DI REEDSSHEPP
         step_size = 0.01823
         rho = 5.8
